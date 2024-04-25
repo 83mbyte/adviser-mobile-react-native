@@ -1,19 +1,58 @@
+import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, ImageBackground } from 'react-native';
+import { RootSiblingParent } from 'react-native-root-siblings';
+import { AuthContextProvider } from './context/AuthContextProvider';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 
+import Start from './screens/Start';
+import SettingsContextProvider from './context/SettingsContextProvider';
+import HistoryContextProvider from './context/HistoryContextProvider';
+
+
+const bgImage = require('./assets/splash_no_logo.png');
+const MyTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: 'transparent'
+  },
+};
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AuthContextProvider>
+      <SettingsContextProvider>
+        <HistoryContextProvider>
+          <RootSiblingParent>
+            <ImageBackground source={bgImage} style={styles.backgroundContainer}>
+              <SafeAreaProvider style={{ flex: 1, flexDirection: 'row' }}>
+
+                <NavigationContainer theme={MyTheme} >
+                  <Start />
+                </NavigationContainer>
+
+              </SafeAreaProvider>
+              <StatusBar style="auto" />
+            </ImageBackground>
+          </RootSiblingParent>
+        </HistoryContextProvider>
+      </SettingsContextProvider>
+    </AuthContextProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundContainer: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    marginHorizontal: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
