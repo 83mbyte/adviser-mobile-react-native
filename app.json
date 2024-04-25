@@ -1,19 +1,18 @@
 {
   "expo": {
-    "name": "ramni_ui",
-    "slug": "ramni_ui",
+    "name": "mobile_app_rn_v1",
+    "slug": "mobile_app_rn_v1",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash_no_logo.png",
+      // "image": "./assets/splash_logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ff3b5a"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
