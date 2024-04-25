@@ -38,3 +38,4 @@ yarn-error.*
 # additionally
 Comments.txt
 assets/splash_logo.png 
+lib/textData.js
