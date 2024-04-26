@@ -9,6 +9,7 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import Start from './screens/Start';
 import SettingsContextProvider from './context/SettingsContextProvider';
 import HistoryContextProvider from './context/HistoryContextProvider';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 const bgImage = require('./assets/splash_no_logo.png');
@@ -28,9 +29,11 @@ export default function App() {
             <ImageBackground source={bgImage} style={styles.backgroundContainer}>
               <SafeAreaProvider style={{ flex: 1, flexDirection: 'row' }}>
 
-                <NavigationContainer theme={MyTheme} >
-                  <Start />
-                </NavigationContainer>
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                  <NavigationContainer theme={MyTheme} >
+                    <Start />
+                  </NavigationContainer>
+                </GestureHandlerRootView>
 
               </SafeAreaProvider>
               <StatusBar style="auto" />
