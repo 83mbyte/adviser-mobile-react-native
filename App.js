@@ -1,7 +1,6 @@
 import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, ImageBackground } from 'react-native';
-import { RootSiblingParent } from 'react-native-root-siblings';
 import { AuthContextProvider } from './context/AuthContextProvider';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
@@ -25,20 +24,18 @@ export default function App() {
     <AuthContextProvider>
       <SettingsContextProvider>
         <HistoryContextProvider>
-          <RootSiblingParent>
-            <ImageBackground source={bgImage} style={styles.backgroundContainer}>
-              <SafeAreaProvider style={{ flex: 1, flexDirection: 'row' }}>
+          <ImageBackground source={bgImage} style={styles.backgroundContainer}>
+            <SafeAreaProvider style={{ flex: 1, flexDirection: 'row' }}>
 
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <NavigationContainer theme={MyTheme} >
-                    <Start />
-                  </NavigationContainer>
-                </GestureHandlerRootView>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <NavigationContainer theme={MyTheme} >
+                  <Start />
+                </NavigationContainer>
+              </GestureHandlerRootView>
 
-              </SafeAreaProvider>
-              <StatusBar style="auto" />
-            </ImageBackground>
-          </RootSiblingParent>
+            </SafeAreaProvider>
+            <StatusBar style="auto" />
+          </ImageBackground>
         </HistoryContextProvider>
       </SettingsContextProvider>
     </AuthContextProvider>
