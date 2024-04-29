@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
             color: '#ff5456',
         },
         link: {
-            color: 'white',
+            color: '#ff5456',
         }
     }
 
