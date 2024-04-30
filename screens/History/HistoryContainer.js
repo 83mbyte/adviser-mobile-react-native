@@ -2,8 +2,9 @@ import React from 'react';
 import WhiteBottomWrapper from '../../components/Wrappers/WhiteBottomWrapper';
 
 import { useHistoryContext } from '../../context/HistoryContextProvider';
-import History from './History';
+
 import OpacityWrapper from '../../components/Wrappers/OpacityWrapper';
+import HistorySwipeableList from './HistorySwipeableList';
 
 const HistoryContainer = ({ navigation, route }) => {
     const historyContextData = useHistoryContext();
@@ -22,7 +23,7 @@ const HistoryContainer = ({ navigation, route }) => {
     return (
         <WhiteBottomWrapper keyId={'history'} route={route}>
             <OpacityWrapper keyId={'opacityHistory'} >
-                <History history={history} chooseChatFromHistory={chooseChatFromHistory} deleteChatFromHistory={deleteChatFromHistory} />
+                <HistorySwipeableList history={history} chooseChatFromHistory={chooseChatFromHistory} deleteChatFromHistory={deleteChatFromHistory} />
             </OpacityWrapper>
         </WhiteBottomWrapper>
     );
