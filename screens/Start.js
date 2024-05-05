@@ -10,6 +10,7 @@ import ChatContainer from './Workspace/Chat/ChatContainer';
 import ChatSettings from './Workspace/Settings/ChatSettings/ChatSettings';
 import ImageSettings from './Workspace/Settings/ImageSettings/ImageSettings';
 import History from './History/HistoryContainer';
+import GenerateImagesContainer from './Workspace/GenerateImages/GenerateImagesContainer';
 
 
 
@@ -77,6 +78,15 @@ const Start = () => {
                                             ...commonOptions,
                                             headerTitle: 'Chat Settings',
                                             headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} route={route} />
+                                        })}
+                                    />
+
+                                    <RootStack.Screen name="Generate Images"
+                                        component={GenerateImagesContainer}
+                                        options={({ navigation, }) => ({
+                                            ...commonOptions,
+                                            headerTitle: 'Generate Images',
+                                            headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} />
                                         })}
                                     />
                                     <RootStack.Screen name="Image Settings"
