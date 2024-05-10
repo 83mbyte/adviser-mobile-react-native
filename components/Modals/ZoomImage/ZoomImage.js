@@ -3,7 +3,7 @@ import { Modal, View, StyleSheet, Image } from 'react-native';
 import Animated, { StretchInY, StretchOutY } from 'react-native-reanimated';
 
 import CloseButton from '../../Buttons/CloseButton';
-const ZoomImage = ({ modalVisible, setModalVisible, imageSource }) => {
+const ZoomImage = ({ modalVisible, closeModal, imageSource }) => {
     const [showContent, setShowContent] = useState(true);
 
     const closeAnimationPromise = () => {
@@ -16,7 +16,7 @@ const ZoomImage = ({ modalVisible, setModalVisible, imageSource }) => {
     }
 
     const modalCloseHandler = () => {
-        closeAnimationPromise().then(() => setModalVisible(false));
+        closeAnimationPromise().then(() => closeModal());
     }
     return (
         <Modal
@@ -24,7 +24,7 @@ const ZoomImage = ({ modalVisible, setModalVisible, imageSource }) => {
             transparent={true}
             visible={modalVisible}
             onRequestClose={() => {
-                setModalVisible(!modalVisible);
+                closeModal();
             }}
         >
             <View style={styles.centeredView}>
@@ -69,7 +69,9 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         flex: 1,
         flexDirection: 'column',
-        maxHeight: '75%',
+        minHeight: '20%',
+        // height: 'auto',
+        maxHeight: '60%',
         width: '100%'
     },
     closeButtonContainer: { justifyContent: 'flex-end', flexDirection: 'row' },
