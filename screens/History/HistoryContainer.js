@@ -12,7 +12,7 @@ const HistoryContainer = ({ navigation, route }) => {
     const history = historyContextData.data.chatHistory.history;
 
     const chooseChatFromHistory = (chatId) => {
-        historyContextData.setHistoryId(chatId);
+        historyContextData.setHistoryId({ path: 'chatHistory', key: chatId });
         navigation.goBack();
     }
 

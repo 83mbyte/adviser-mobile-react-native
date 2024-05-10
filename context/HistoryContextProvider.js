@@ -10,6 +10,10 @@ const initialState = {
         currentId: null,
         history: {}
     },
+    imagesHistory: {
+        currentId: null,
+        history: {}
+    }
 }
 
 const reducer = (prevState, action) => {
@@ -17,20 +21,19 @@ const reducer = (prevState, action) => {
         case 'ADD_HISTORY_FROM_SERVER':
             return {
                 ...prevState,
-                chatHistory: {
-                    ...prevState.chatHistory,
-                    history: {
-                        ...action.payload
-                    }
+                [action.payload.path]: {
+                    ...prevState[action.payload.path],
+                    history: action.payload.data
                 }
             }
 
         case 'SET_HISTORY_ID':
+
             return {
                 ...prevState,
-                chatHistory: {
-                    ...prevState.chatHistory,
-                    currentId: action.payload
+                [action.payload.path]: {
+                    ...prevState[action.payload.path],
+                    currentId: action.payload.key
                 }
             }
         case 'DELETE_HISTORY_ITEM':
@@ -78,6 +81,22 @@ const reducer = (prevState, action) => {
                 }
             }
 
+        case 'DELETE_IMAGE':
+
+            return {
+                ...prevState,
+                imagesHistory: {
+                    ...prevState.imagesHistory,
+                    history: {
+                        ...prevState.imagesHistory.history,
+                        [action.payload.key]:
+                            (prevState.imagesHistory.history[action.payload.key]).filter(
+                                (item) => item.source !== action.payload.imageSource
+                            )
+                    }
+                }
+            }
+
         default:
             return { ...prevState }
     }
@@ -91,15 +110,14 @@ const HistoryContextProvider = ({ children }) => {
     const historyContextData = useMemo(() => ({
         data: historyState,
 
-        setHistoryId: (value) => {
-            if (value) {
+        setHistoryId: ({ path, key }) => {
+            if (path && key) {
                 dispatch(
-                    { type: 'SET_HISTORY_ID', payload: value }
+                    { type: 'SET_HISTORY_ID', payload: { path, key } }
                 )
             } else {
-
                 dispatch(
-                    { type: 'SET_HISTORY_ID', payload: Date.now() }
+                    { type: 'SET_HISTORY_ID', payload: { path, key: Date.now() } }
                 )
             }
         },
@@ -114,12 +132,19 @@ const HistoryContextProvider = ({ children }) => {
                 type: 'ADD_HISTORY_ITEM',
                 payload: { path, historyId, value }
             })
+        },
+        deleteImageFromHistory: ({ key, imageSource }) => {
+            dispatch({
+                type: 'DELETE_IMAGE',
+                payload: { key, imageSource }
+            })
         }
     }), [historyState]);
 
     useEffect(() => {
         // dev 
-        dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: DATA_TEMPLATE });
+        dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'chatHistory', data: DATA_TEMPLATE } });
+        dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'imagesHistory', data: IMAGE_DATA_TEMPLATE } });
 
         //PROD
         // get data from server
@@ -166,5 +191,40 @@ const DATA_TEMPLATE = {
         {
             assistant: { content: 'Provident hic quae ullam similique aspernatur sunt incidunt, dolores veritatis aliquid dolorem dolore minima quam, ratione aut ea fugit recusandae illum distinctio, aperiam repudiandae fugiat consequatur! Laboriosam ipsum deserunt dolorum possimus, nesciunt placeat quibusdam dolore corrupti hic, vitae sequi obcaecati incidunt facilis sint natus illo. Sunt, laboriosam ducimus illum accusantium excepturi sapiente tenetur obcaecati.', format: 'Plain text' }, user: { content: ' Datur! Hic accusamus voluptatem, est delectus explicabo unde doloremque! Rerum iste facere assumenda beatae perspiciatis?' }
         }
+    ]
+}
+
+const IMAGE_DATA_TEMPLATE = {
+    123: [
+        {
+            id: '1a',
+            title: 'Ferrari',
+            source: 'https://i.pinimg.com/originals/fa/db/86/fadb8609df556d0f99bb815793cfa8ea.jpg'
+        },
+        {
+            id: '2a',
+            title: 'Chevrolet',
+            source: 'https://f.vividscreen.info/soft/ef13d4cf09d3a0e0474200e427c803ed/Chevrolet-Camaro-Legendary-American-Car-square-l.jpg'
+        },
+        {
+            id: '3a',
+            title: 'abc',
+            source: 'https://pics.craiyon.com/2023-09-05/5d01fa50476544a3aa6f8e84d965b8ad.webp'
+        },
+        {
+            id: '4a',
+            title: 'mers',
+            source: 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?cs=srgb&dl=pexels-mikebirdy-120049.jpg&fm=jpg'
+        },
+        {
+            id: '5a',
+            title: 'unknown',
+            source: 'https://wallpapercave.com/wp/wp4471394.jpg'
+        },
+        {
+            id: '6a',
+            title: 'unknown_2',
+            source: 'https://www.shutterstock.com/image-photo/oil-painting-beautiful-natural-landscape-260nw-2442446671.jpg'
+        },
     ]
 }
