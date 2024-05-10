@@ -9,7 +9,7 @@ import Workspace from './Workspace/Workspace';
 import ChatContainer from './Workspace/Chat/ChatContainer';
 import ChatSettings from './Workspace/Settings/ChatSettings/ChatSettings';
 import ImageSettings from './Workspace/Settings/ImageSettings/ImageSettings';
-import History from './History/HistoryContainer';
+import HistoryContainer from './History/HistoryContainer';
 import GenerateImagesContainer from './Workspace/GenerateImages/GenerateImagesContainer';
 
 
@@ -63,7 +63,7 @@ const Start = () => {
                                     />
 
                                     <RootStack.Screen name="Chat History"
-                                        component={History}
+                                        component={HistoryContainer}
 
                                         options={({ navigation, route }) => ({
                                             ...commonOptions,
@@ -83,20 +83,21 @@ const Start = () => {
 
                                     <RootStack.Screen name="Generate Images"
                                         component={GenerateImagesContainer}
-                                        options={({ navigation, }) => ({
+                                        options={({ navigation, route }) => ({
                                             ...commonOptions,
                                             headerTitle: 'Generate Images',
-                                            headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} />
+                                            headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} route={route} />
                                         })}
                                     />
+
                                     <RootStack.Screen name="Image Settings"
                                         component={ImageSettings}
 
-                                        options={({ navigation, }) => ({
+                                        options={({ navigation, route }) => ({
                                             ...commonOptions,
                                             headerTitle: 'Image Settings',
 
-                                            headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} />
+                                            headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} route={route} />
                                         })}
                                     />
                                 </>
