@@ -3,13 +3,15 @@ import { View, StyleSheet, Text } from 'react-native';
 import SubtitleHeading from '../../components/SubtitleHeading/SubtitleHeading';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, LinearTransition, StretchInY, StretchOutY } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import DividerStyled from '../../components/Divider/DividerStyled';
 
-const layoutTransition = LinearTransition.delay(300);
-const enteringTransition = StretchInY.delay(1200);
-const exitingTransition = StretchOutY;
+import animationLibrary from '../../lib/animationConfig';
+
+const layoutTransition = animationLibrary.layoutTransition.linear;
+const enteringTransition = animationLibrary.Stretch.entering;
+const exitingTransition = animationLibrary.Stretch.exiting;
 
 const HistorySwipeableList = ({ history, chooseChatFromHistory, deleteChatFromHistory }) => {
 
@@ -20,6 +22,7 @@ const HistorySwipeableList = ({ history, chooseChatFromHistory, deleteChatFromHi
     )
 
     const dataHistoryCached = useMemo(() => {
+
         return Object.entries(history)
     }, [history])
 
@@ -89,7 +92,6 @@ const ListItem = ({ item, chooseChatFromHistory, deleteChatFromHistory }) => {
                     () =>
                         <RightSwipeActionsContainer
                             animatedStyles={animatedStyles}
-                            chooseChatFromHistory={chooseChatFromHistory}
                             deleteChatFromHistory={() => deleteChatFromHistory(item[0])}
                         />
                 }
