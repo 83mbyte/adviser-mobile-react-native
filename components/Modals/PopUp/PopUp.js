@@ -23,7 +23,7 @@ const PopUp = ({ modalVisible, setModalVisible, setHistoryId, headerText, messag
                     </View>
                     <View style={styles.footer}>
 
-                        <RedButton title={'Agree'} variant='solid' size='sm' callback={() => { setHistoryId(), setModalVisible(false) }} />
+                        <RedButton title={'Agree'} variant='solid' size='sm' callback={() => { setHistoryId({ path: 'chatHistory' }), setModalVisible(false) }} />
                         <RedButton title={'Cancel'} variant='outline' size='sm' callback={() => setModalVisible(false)} />
                     </View>
 
