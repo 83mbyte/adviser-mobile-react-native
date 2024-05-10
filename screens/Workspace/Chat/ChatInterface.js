@@ -16,7 +16,7 @@ const ChatInterface = ({ navigation }) => {
     const historyContextData = useHistoryContext();
     const history = historyContextData.data.chatHistory.history;
     const historyId = historyContextData.data.chatHistory.currentId;
-    const setHistoryId = (value) => historyContextData.setHistoryId(value);
+    const setHistoryId = (obj) => historyContextData.setHistoryId(obj);
     const addHistoryItem = (value) => historyContextData.addHistoryItem(value);
 
 
@@ -75,7 +75,7 @@ const ChatInterface = ({ navigation }) => {
 
     useEffect(() => {
         if (!historyId) {
-            setHistoryId();
+            setHistoryId({ path: 'chatHistory' });
         }
     }, []);
 
