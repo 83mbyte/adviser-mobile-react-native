@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { Modal, View, StyleSheet, Image } from 'react-native';
-import Animated, { StretchInY, StretchOutY } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
+
+import animationLibrary from '../../../lib/animationConfig';
+
+const enterTransition = animationLibrary.Stretch.entering;
+const exitTransition = animationLibrary.Stretch.exiting;
 
 import CloseButton from '../../Buttons/CloseButton';
 const ZoomImage = ({ modalVisible, closeModal, imageSource }) => {
@@ -30,7 +35,7 @@ const ZoomImage = ({ modalVisible, closeModal, imageSource }) => {
             <View style={styles.centeredView}>
                 {
                     showContent &&
-                    <Animated.View style={styles.whiteContainer} entering={StretchInY} exiting={StretchOutY}  >
+                    <Animated.View style={styles.whiteContainer} entering={enterTransition.delay(0)} exiting={exitTransition}  >
                         <View style={styles.closeButtonContainer}>
                             <CloseButton onPressCallback={modalCloseHandler} />
                         </View>
@@ -66,10 +71,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 15,
         marginHorizontal: 5,
-        borderRadius: 15,
+        borderRadius: 25,
         flex: 1,
         flexDirection: 'column',
-        minHeight: '20%',
+        minHeight: '10%',
         // height: 'auto',
         maxHeight: '60%',
         width: '100%'
