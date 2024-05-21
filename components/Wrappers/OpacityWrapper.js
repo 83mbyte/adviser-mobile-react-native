@@ -1,31 +1,22 @@
-import { useFocusEffect } from '@react-navigation/native';
-import { MotiView, useAnimationState } from 'moti';
-import React, { useCallback } from 'react';
+import React from 'react';
+import { View } from 'react-native';
+
+import AnimatedViewWrapper from './AnimatedViewWrapper';
+
+import animationLibrary from '../../lib/animationConfig';
+const entering = animationLibrary.Fade.entering;
+const exiting = animationLibrary.Fade.exiting;
 
 const OpacityWrapper = ({ keyId, children }) => {
 
 
-    const animationState = useAnimationState({
-        from: { opacity: 0 },
-        visible: { opacity: 1, transition: { delay: 1000, duration: 800 } },
-        exit: { opacity: 0, transition: { delay: 0, duration: 100 } },
-
-    })
-    useFocusEffect(
-        useCallback(() => {
-            animationState.transitionTo('visible');
-
-            return () => {
-                animationState.transitionTo('exit');
-            }
-
-        }, [])
-    )
     return (
 
-        <MotiView key={keyId} state={animationState} style={{ flex: 1 }}  >
-            {children}
-        </MotiView>
+        <AnimatedViewWrapper keyId={keyId} entering={entering} exiting={exiting} >
+            <View style={{ height: '100%' }}>
+                {children}
+            </View>
+        </AnimatedViewWrapper>
     );
 };
 
