@@ -22,14 +22,14 @@ const FooterInteractionContainer = ({
 
     return (
         <View style={styles.footerContainer}>
-            <View style={{ height: 1, backgroundColor: '#ececee', marginHorizontal: '5%', marginBottom: 5 }}></View>
+            <View style={styles.redLine}></View>
 
             <View style={styles.dataInputContainer}>
                 <View style={{ flex: 1 }}>
                     <TextInput style={styles.dataInput} placeholder={placeholder} value={inputValue} onChangeText={(value) => inputChangeHandler(value)} />
                 </View>
                 <View>
-                    <TouchableOpacity onPress={submitHandler} style={{ marginRight: 10, transform: [{ 'rotate': '5deg' }, { translateY: -2 }] }}>
+                    <TouchableOpacity onPress={submitHandler} style={styles.iconSendButton}>
                         <Ionicons name={icon} size={24} color="#8b98b4" />
                     </TouchableOpacity>
                 </View>
@@ -45,9 +45,11 @@ export default FooterInteractionContainer;
 const styles = StyleSheet.create({
     footerContainer: {
         paddingHorizontal: 15,
+        // paddingTop: 15,
         borderTopWidth: 0,
-        borderTopColor: 'white'
+        borderTopColor: 'red'
     },
+    redLine: { height: 2, backgroundColor: '#fe3a59', marginHorizontal: '5%', marginBottom: 10, },
     dataInputContainer: {
         backgroundColor: '#ebebed',
         // backgroundColor: '#fafafc',
@@ -66,4 +68,5 @@ const styles = StyleSheet.create({
         borderWidth: 0,
         borderColor: 'black',
     },
+    iconSendButton: { marginRight: 10, transform: [{ 'rotate': '5deg' }, { translateY: 0 }] }
 })
