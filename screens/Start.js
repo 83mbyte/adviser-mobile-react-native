@@ -7,112 +7,104 @@ import { useAuthContext } from '../context/AuthContextProvider';
 import BackButtonHeader from '../components/Buttons/BackButtonHeader';
 import Workspace from './Workspace/Workspace';
 import ChatContainer from './Workspace/Chat/ChatContainer';
-import ChatSettings from './Workspace/Settings/ChatSettings/ChatSettings';
-import ImageSettings from './Workspace/Settings/ImageSettings/ImageSettings';
 import HistoryContainer from './History/HistoryContainer';
 import GenerateImagesContainer from './Workspace/GenerateImages/GenerateImagesContainer';
+import SettingsContainer from './Workspace/Settings/SettingsContainer';
+import SettingsOptions from './Workspace/Settings/SettingsOptions';
 
-
-
-const RootStack = createNativeStackNavigator();
-const commonOptions = {
+const COMMON_OPTIONS = {
     gestureDirection: 'vertical',
     headerShown: true,
     headerTransparent: true,
     headerTintColor: 'white',
-}
+};
+const NAVIGATION_SCREENS = [
+    {
+        screenName: 'Chats',
+        componentName: ChatContainer,
+        headerTitle: 'Chat',
+    },
+    {
+        screenName: 'Chat History',
+        componentName: HistoryContainer,
+        headerTitle: 'Chat History',
+    },
+    {
+        screenName: 'Generate Images',
+        componentName: GenerateImagesContainer,
+        headerTitle: 'Generate Images',
+    },
+    {
+        screenName: 'Settings',
+        componentName: SettingsContainer,
+        headerTitle: 'Settings',
+    },
+    {
+        screenName: 'Chat Settings',
+        componentName: SettingsOptions,
+        headerTitle: 'Chat Settings',
+    },
+    {
+        screenName: 'Images Settings',
+        componentName: SettingsOptions,
+        headerTitle: 'Images Settings',
+    },
+
+]
+
+const RootStack = createNativeStackNavigator();
 
 const Start = () => {
-
     const authState = useAuthContext();
 
     return (
         <View style={{ flex: 1 }}>
 
-            <RootStack.Navigator  >
+            <RootStack.Navigator>
                 {
                     !authState.data.user
-                        ?
-                        <RootStack.Group screenOptions={{ headerShown: false, }} >
+                        ? <RootStack.Group screenOptions={{ headerShown: false, }} >
+
                             <RootStack.Screen name="GetStarted" component={GetStarted} />
                             <RootStack.Screen name="AuthModal"
                                 component={AuthModal}
                                 options={({ navigation }) => ({
-                                    headerShown: false,
+                                    // headerShown: true,
                                     presentation: 'transparentModal',
                                     // presentation: 'fullScreenModal',
                                     headerTransparent: true,
                                     headerTitle: '',
-                                    headerLeft: () => <BackButtonHeader navigation={navigation} />
+                                    // headerLeft: () => <BackButtonHeader navigation={navigation} />
                                 })} />
 
                         </RootStack.Group>
-                        : <>
+                        : <RootStack.Group screenOptions={{ gestureEnabled: false }}>
                             <RootStack.Screen name="Workspace" component={Workspace} options={{ headerShown: false, }} />
                             {
-                                !authState.data.isSignout &&
-                                <>
-                                    <RootStack.Screen name="Chat"
-                                        component={ChatContainer}
 
-                                        options={({ navigation, route }) => ({
-                                            ...commonOptions,
-                                            headerTitle: 'Chat',
-                                            headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} route={route} />,
-                                        })}
-                                    />
+                                NAVIGATION_SCREENS.map((screen, index) => {
+                                    return (
+                                        <RootStack.Screen key={`screen_${index}`} name={screen.screenName} component={screen.componentName}
+                                            options={({ navigation, route }) => ({
+                                                ...COMMON_OPTIONS,
+                                                headerTitle: screen.headerTitle,
+                                                headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} route={route} />,
+                                            })}
+                                        />
+                                    )
+                                })
 
-                                    <RootStack.Screen name="Chat History"
-                                        component={HistoryContainer}
-
-                                        options={({ navigation, route }) => ({
-                                            ...commonOptions,
-                                            headerTitle: 'Chat History',
-                                            headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} route={route} />
-                                        })}
-                                    />
-                                    <RootStack.Screen name="Chat Settings"
-                                        component={ChatSettings}
-
-                                        options={({ navigation, route }) => ({
-                                            ...commonOptions,
-                                            headerTitle: 'Chat Settings',
-                                            headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} route={route} />
-                                        })}
-                                    />
-
-                                    <RootStack.Screen name="Generate Images"
-                                        component={GenerateImagesContainer}
-                                        options={({ navigation, route }) => ({
-                                            ...commonOptions,
-                                            headerTitle: 'Generate Images',
-                                            headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} route={route} />
-                                        })}
-                                    />
-
-                                    <RootStack.Screen name="Image Settings"
-                                        component={ImageSettings}
-
-                                        options={({ navigation, route }) => ({
-                                            ...commonOptions,
-                                            headerTitle: 'Image Settings',
-
-                                            headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} route={route} />
-                                        })}
-                                    />
-                                </>
                             }
-
-                        </>
+                        </RootStack.Group>
                 }
-                {/* <RootStack.Group screenOptions={{ presentation: 'containedTransparentModal', }}>
-                    <RootStack.Screen name="MyModal" component={ModalScreen} options={{ headerShown: false, }} />
-                </RootStack.Group> */}
 
             </RootStack.Navigator>
-        </View >
+
+        </View>
     );
 };
 
 export default Start;
+
+
 

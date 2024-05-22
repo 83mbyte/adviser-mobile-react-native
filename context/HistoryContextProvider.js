@@ -46,7 +46,6 @@ const reducer = (prevState, action) => {
                 }
             }
         case 'ADD_HISTORY_ITEM':
-            console.log('ADD_HISTORY_ITEM', action.payload);
 
             // add item to the history state if the historyID already exists in the state
             if ((prevState[action.payload.path]) && prevState[action.payload.path]['history'][action.payload.historyId]) {

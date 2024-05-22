@@ -55,8 +55,8 @@ export default AuthModal;
 const styles = StyleSheet.create({
     modalContainer: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', backgroundColor: 'transparent', height: '100%' },
     modalWhiteArea: {
-        backgroundColor: 'white', flexDirection: 'column', width: '100%', borderTopLeftRadius: 35,
-        borderTopRightRadius: 35,
+        backgroundColor: 'white', flexDirection: 'column', width: '100%', borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
         padding: 20,
         marginTop: 15,
     },
@@ -68,9 +68,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
         height: 25,
         marginBottom: 10,
-
         justifyContent: 'center',
-
     },
 
 })

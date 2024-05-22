@@ -1,6 +1,5 @@
 import { createContext, useContext, useMemo, useReducer } from "react";
 
-import { imageSettingsDescription, chatSettingsDescription } from "../lib/textData";
 
 const SettingsContext = createContext();
 
@@ -9,24 +8,23 @@ export const useSettingsContext = () => useContext(SettingsContext);
 const initialState = {
 
     chatSettings: {
-        systemVersion: chatSettingsDescription.systemVersion[1].value,
-        replyLength: chatSettingsDescription.replyLength[1].value,
-        replyStyle: chatSettingsDescription.replyStyle[1].value,
-        replyTone: chatSettingsDescription.replyTone[1].value,
-        replyFormat: chatSettingsDescription.replyFormat[1].value,
-        replyCount: 1
+        systemVersion: '4',
+        replyLength: '100 words',
+        replyStyle: 'Facts only',
+        replyTone: 'Casual',
+        replyFormat: 'Plain text',
+        replyCount: false
     },
-    imageSettings: {
-        size: imageSettingsDescription.imageSize[1].value,
-        style: imageSettingsDescription.imageStyle[1].value,
-        quality: imageSettingsDescription.imageQuality[1].value
+    imagesSettings: {
+        size: 'A',
+        style: 'vivid',
+        quality: 'standard'
     }
 
 }
 
 const reducer = (prevState, action) => {
     switch (action.type) {
-
         case 'SET_SYSTEM_VERSION':
             return {
                 ...prevState,
@@ -72,30 +70,30 @@ const reducer = (prevState, action) => {
                 ...prevState,
                 chatSettings: {
                     ...prevState.chatSettings,
-                    replyCount: action.payload
+                    replyCount: !prevState.chatSettings.replyCount
                 }
             }
         case 'SET_IMAGE_SIZE':
             return {
                 ...prevState,
-                imageSettings: {
-                    ...prevState.imageSettings,
+                imagesSettings: {
+                    ...prevState.imagesSettings,
                     size: action.payload
                 }
             }
         case 'SET_IMAGE_STYLE':
             return {
                 ...prevState,
-                imageSettings: {
-                    ...prevState.imageSettings,
+                imagesSettings: {
+                    ...prevState.imagesSettings,
                     style: action.payload
                 }
             }
         case 'SET_IMAGE_QUALITY':
             return {
                 ...prevState,
-                imageSettings: {
-                    ...prevState.imageSettings,
+                imagesSettings: {
+                    ...prevState.imagesSettings,
                     quality: action.payload
                 }
             }
@@ -111,18 +109,14 @@ const SettingsContextProvider = ({ children }) => {
 
     const settingsContextData = useMemo(() => ({
         data: settingsState,
-        setChatSettings: (data) => {
-            dispatch({
-                type: data.type,
-                payload: data.value
-            })
-        },
-        setImageSettings: (data) => {
+
+        setSettings: (data) => {
             dispatch({
                 type: data.type,
                 payload: data.value
             })
         }
+
     }), [settingsState]);
 
     return (

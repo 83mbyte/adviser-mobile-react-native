@@ -29,13 +29,13 @@ const HistorySwipeableList = ({ history, chooseChatFromHistory, deleteChatFromHi
     return (
 
         <View style={styles.container}>
-            <View style={{ width: '100%', marginBottom: 10 }}>
+            <View style={styles.subTitleContainer}>
                 <SubtitleHeading value={'Your Chats History'} />
             </View>
             <Animated.FlatList
                 itemLayoutAnimation={layoutTransition}
                 data={dataHistoryCached}
-                style={{ width: '100%', backgroundColor: 'transparent', height: '100%' }}
+                style={styles.flatListStyle}
                 keyExtractor={item => item[0]}
                 renderItem={renderItemCachedFunc}
                 ItemSeparatorComponent={() => <DividerStyled />}
@@ -96,10 +96,10 @@ const ListItem = ({ item, chooseChatFromHistory, deleteChatFromHistory }) => {
                         />
                 }
             >
-                <View style={{ paddingHorizontal: 10, paddingVertical: 15, marginBottom: 0, backgroundColor: 'white' }}>
+                <View style={styles.listItemContainer}>
                     <TouchableOpacity onPress={() => chooseChatFromHistory(item[0])} >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', flex: 1 }}>
-                            <View style={{ alignItems: 'flex-end', marginRight: 5, flexDirection: 'row', columnGap: 10 }}>
+                        <View style={styles.listItemRow}>
+                            <View style={styles.dateTimeContainer}>
                                 <Text style={styles.historyDateText}>{timeStampCache.date}</Text>
                                 <Text style={styles.historyDateText}>{timeStampCache.time}</Text>
                             </View>
@@ -115,10 +115,10 @@ const ListItem = ({ item, chooseChatFromHistory, deleteChatFromHistory }) => {
 
 const RightSwipeActionsContainer = ({ deleteChatFromHistory, animatedStyles }) => {
     return (
-        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <View style={styles.rightSwipeContainer}>
             <TouchableOpacity
                 onPress={deleteChatFromHistory}
-                style={[styles.rightSwipeContainer, { backgroundColor: "#ff0000", }]}>
+                style={[styles.rightSwipeButtonContainer, { backgroundColor: "#ff0000", }]}>
                 <Animated.View style={[styles.rightSwipeButton, animatedStyles]}>
                     <Ionicons name="trash-outline" size={22} color="white" />
                     <Text
@@ -133,13 +133,13 @@ const RightSwipeActionsContainer = ({ deleteChatFromHistory, animatedStyles }) =
 
 
 const styles = StyleSheet.create({
-    container: { padding: 10, alignItems: 'center', justifyContent: 'center' },
 
-    itemSeparator: {
-        flex: 1,
-        height: 1,
-        backgroundColor: "#fe3a59",
-    },
+    container: { padding: 10, alignItems: 'center', justifyContent: 'center' },
+    flatListStyle: { width: '100%', backgroundColor: 'transparent', height: '100%' },
+    subTitleContainer: { width: '100%', marginBottom: 10 },
+    listItemContainer: { paddingHorizontal: 10, paddingVertical: 15, marginBottom: 0, backgroundColor: 'white' },
+    listItemRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', flex: 1 },
+    dateTimeContainer: { alignItems: 'flex-end', marginRight: 5, flexDirection: 'row', columnGap: 10 },
 
     historyDateText: {
         fontSize: 13,
@@ -149,21 +149,23 @@ const styles = StyleSheet.create({
         fontSize: 16
     },
 
-    rightSwipeContainer: {
+    rightSwipeContainer: { alignItems: 'center', justifyContent: 'center' },
 
+    rightSwipeButtonContainer: {
         justifyContent: "center",
         alignItems: "center",
         height: "100%",
     },
+
     rightSwipeButton: {
         alignItems: "center",
         paddingHorizontal: 20,
         paddingVertical: 5,
         rowGap: 2
     },
+
     rightSwipeButtonText: {
         fontSize: 12,
         fontWeight: "600",
     },
-
 })
