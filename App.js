@@ -9,6 +9,7 @@ import Start from './screens/Start';
 import SettingsContextProvider from './context/SettingsContextProvider';
 import HistoryContextProvider from './context/HistoryContextProvider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { AttachContextProvider } from './context/AttachContextProvider';
 
 
 const bgImage = require('./assets/splash_no_logo.png');
@@ -24,18 +25,20 @@ export default function App() {
     <AuthContextProvider>
       <SettingsContextProvider>
         <HistoryContextProvider>
-          <ImageBackground source={bgImage} style={styles.backgroundContainer}>
-            <SafeAreaProvider style={{ flex: 1, flexDirection: 'row' }}>
+          <AttachContextProvider>
+            <ImageBackground source={bgImage} style={styles.backgroundContainer}>
+              <SafeAreaProvider style={{ flex: 1, flexDirection: 'row' }}>
 
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <NavigationContainer theme={MyTheme} >
-                  <Start />
-                </NavigationContainer>
-              </GestureHandlerRootView>
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                  <NavigationContainer theme={MyTheme} >
+                    <Start />
+                  </NavigationContainer>
+                </GestureHandlerRootView>
 
-            </SafeAreaProvider>
-            <StatusBar style="auto" />
-          </ImageBackground>
+              </SafeAreaProvider>
+              <StatusBar style="auto" />
+            </ImageBackground>
+          </AttachContextProvider>
         </HistoryContextProvider>
       </SettingsContextProvider>
     </AuthContextProvider>
