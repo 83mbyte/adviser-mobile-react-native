@@ -6,10 +6,11 @@ import { shareAsync } from 'expo-sharing';
 import WhiteBottomWrapper from '../../../components/Wrappers/WhiteBottomWrapper';
 import OpacityWrapper from '../../../components/Wrappers/OpacityWrapper';
 import GenerateImagesInterface from './GenerateImagesInterface';
-import ZoomImage from '../../../components/Modals/ZoomImage/ZoomImage';
 
-import PopUpAnimated from '../../../components/Modals/PopUp/PopUpAnimated';
 import { useHistoryContext } from '../../../context/HistoryContextProvider';
+import ModalContainer from '../../../components/Modals/ModalContainer';
+import ZoomImageModalContent from '../../../components/Modals/ZoomImage/ZoomImageModalContent';
+import WarningModalContent from '../../../components/Modals/WarningModal/WarningModalContent';
 
 
 
@@ -74,9 +75,7 @@ const GenerateImagesContainer = ({ navigation, route }) => {
 
 
     const deleteImageFromHistory = () => {
-        dispatch({ type: 'TOGGLE-DELETE-MODAL' });
         historyContextData.deleteImageFromHistory({ key: historyId, imageSource: utilityState.showDeleteModal.imageToDelete });
-
     }
 
     const downloadButtonPress = async (downloadURL) => {
@@ -126,29 +125,41 @@ const GenerateImagesContainer = ({ navigation, route }) => {
     return (
 
 
-        <WhiteBottomWrapper route={route} key={'cardGenerateImages'}>
-            <OpacityWrapper key={'opacityGenerateImages'}>
-                {/* DEV */}
-                <GenerateImagesInterface navigation={navigation} data={(history && Object.keys(history).length > 0) ? history[historyId] : Object.values(history)[0]} zoomButtonPress={zoomButtonPress} downloadButtonPress={downloadButtonPress} deleteButtonPress={deleteButtonPress} />
-                {/* PROD */}
-                {/* <GenerateImagesInterface data={history && Object.keys(history) > 0 ? history[historyId] : []} zoomButtonPress={zoomButtonPress} downloadButtonPress={downloadButtonPress} deleteButtonPress={deleteButtonPress} /> */}
+        <>
+            <WhiteBottomWrapper route={route} key={'cardGenerateImages'}>
+                <OpacityWrapper key={'opacityGenerateImages'}>
+                    {/* DEV */}
+                    <GenerateImagesInterface navigation={navigation} data={(history && Object.keys(history).length > 0) ? history[historyId] : Object.values(history)[0]} zoomButtonPress={zoomButtonPress} downloadButtonPress={downloadButtonPress} deleteButtonPress={deleteButtonPress} />
+                    {/* PROD */}
+                    {/* <GenerateImagesInterface data={history && Object.keys(history) > 0 ? history[historyId] : []} zoomButtonPress={zoomButtonPress} downloadButtonPress={downloadButtonPress} deleteButtonPress={deleteButtonPress} /> */}
 
-            </OpacityWrapper>
+                </OpacityWrapper>
+
+
+            </WhiteBottomWrapper>
             {
                 utilityState.showZoomImage.showModal &&
-                <ZoomImage modalVisible={utilityState.showZoomImage.showModal} closeModal={() => dispatch({ type: 'TOGGLE-ZOOM-IMAGE' })} imageSource={utilityState.showZoomImage.imageSource} />
+                <ModalContainer modalVisible={utilityState.showZoomImage.showModal} callbackCancel={() => dispatch({ type: 'TOGGLE-ZOOM-IMAGE' })} customHeight={'50%'}>
+                    <ZoomImageModalContent imageSource={utilityState.showZoomImage.imageSource} />
+                </ModalContainer>
+
             }
+
             {
                 utilityState.showDeleteModal.showModal &&
-                <PopUpAnimated
-                    headerText={'Are you sure?'}
-                    message='By clicking AGREE, the image will be removed permanently.'
-                    callbackCancel={() => dispatch({ type: 'TOGGLE-DELETE-MODAL' })}
-                    callbackAgree={deleteImageFromHistory}
-                />
-            }
-        </WhiteBottomWrapper>
+                <ModalContainer modalVisible={utilityState.showDeleteModal.showModal} callbackCancel={() => dispatch({ type: 'TOGGLE-DELETE-MODAL' })}>
+                    <WarningModalContent
+                        title='Are you sure?'
+                        message='By clicking AGREE, the image will be removed permanently.'
+                        buttons={[
+                            { title: 'Agree', type: 'solid', callback: deleteImageFromHistory },
+                            { title: 'Cancel', type: 'outline', }
+                        ]}
+                    />
+                </ModalContainer>
 
+            }
+        </>
     );
 };
 

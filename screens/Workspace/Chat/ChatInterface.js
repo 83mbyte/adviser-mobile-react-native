@@ -62,7 +62,7 @@ const ChatInterface = ({ navigation, setShowModal, history, historyId, submitCha
                 </FlatList>
             </View>
 
-            <FooterInteractionContainer callback={submitChatForm} />
+            <FooterInteractionContainer screenName={'Chat'} callback={submitChatForm} />
         </>
     )
 }

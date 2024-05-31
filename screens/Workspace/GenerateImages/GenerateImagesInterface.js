@@ -44,7 +44,7 @@ const GenerateImagesInterface = ({ data, zoomButtonPress, downloadButtonPress, d
                 >
                 </Animated.FlatList>
             </View >
-            < FooterInteractionContainer icon='brush' />
+            <FooterInteractionContainer icon='brush' screenName='Generate Images' />
         </>
     );
 };

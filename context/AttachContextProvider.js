@@ -8,15 +8,27 @@ export const useAttachContext = () => {
 
 const initialState = {
     attachmentsArray: [],
-    showModal: false
+    showPickerModal: false,
+    showWarningModal: false,
+    sendAttachmentsOnly: false
 };
 
 const reducer = (prevState, action) => {
     switch (action.type) {
-        case 'TOGGLE-MODAL':
+        case 'SHOW-PICKER-MODAL':
             return {
                 ...prevState,
-                showModal: action.payload
+                showPickerModal: action.payload
+            }
+        // case 'SHOW-WARNING-MODAL':
+        //     return {
+        //         ...prevState,
+        //         showWarningModal: action.payload
+        //     }
+        case 'SEND-ATTACHMENTS-ONLY':
+            return {
+                ...prevState,
+                sendAttachmentsOnly: action.payload
             }
 
         case 'EMPTY-ATTACHMENT-ARRAY':
@@ -50,7 +62,13 @@ export const AttachContextProvider = ({ children }) => {
     const attachContextData = useMemo(() => ({
         data: attachState,
         showAttachmentPicker: (value) => {
-            dispatch({ type: 'TOGGLE-MODAL', payload: value })
+            dispatch({ type: 'SHOW-PICKER-MODAL', payload: value })
+        },
+        // showWarningModal: (value) => {
+        //     dispatch({ type: 'SHOW-WARNING-MODAL', payload: value })
+        // },
+        sendAttachmentsOnly: (value) => {
+            dispatch({ type: 'SEND-ATTACHMENTS-ONLY', payload: value })
         },
         clearAllItems: () => {
             dispatch({ type: 'EMPTY-ATTACHMENT-ARRAY' })
