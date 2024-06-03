@@ -38,7 +38,7 @@ const FooterInteractionContainer = ({
 
     const submitHandler = () => {
 
-        let resp = callback(inputValue);
+        let resp = callback(inputValue.trim());
         if (resp && resp.type == 'Success') {
             attachContextData.clearAllItems();
             setInputValue(null);
@@ -51,9 +51,13 @@ const FooterInteractionContainer = ({
             containerHeight.value = 110;
         } else {
             containerHeight.value = 0;
-
         }
-    }, [attachmentsArray])
+    }, [attachmentsArray]);
+
+    useEffect(() => {
+        // clear previously added attachments 
+        attachContextData.clearAllItems();
+    }, [])
 
     return (
         <View style={styles.footerContainer}>
@@ -80,8 +84,7 @@ const FooterInteractionContainer = ({
                         <TextInput style={styles.dataInput} placeholder={placeholder} value={inputValue} onChangeText={(value) => inputChangeHandler(value)} multiline={true} />
                     </View>
                     {
-                        // TODO  clear attachments if not Chat window
-                        // TODO  clear attachments if not Chat window
+
                         screenName === 'Chat'
                             ?
                             <View style={{ flexDirection: 'row', columnGap: 7 }}>
