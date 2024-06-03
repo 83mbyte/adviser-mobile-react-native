@@ -1,4 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer } from "react";
+import { db } from "../firebaseConfig";
+import { get, onValue, ref, child } from "firebase/database";
+import { useAuthContext } from "./AuthContextProvider";
 
 const HistoryContext = createContext();
 
@@ -15,6 +18,7 @@ const initialState = {
         history: {}
     }
 }
+
 
 const reducer = (prevState, action) => {
     switch (action.type) {
@@ -103,6 +107,7 @@ const reducer = (prevState, action) => {
 }
 
 const HistoryContextProvider = ({ children }) => {
+    const userId = useAuthContext().data.user.uid;
 
     const [historyState, dispatch] = useReducer(reducer, initialState);
 
@@ -143,15 +148,20 @@ const HistoryContextProvider = ({ children }) => {
     useEffect(() => {
         // dev 
         dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'chatHistory', data: DATA_TEMPLATE } });
-        dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'imagesHistory', data: IMAGE_DATA_TEMPLATE } });
+        // dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'imagesHistory', data: IMAGE_DATA_TEMPLATE } });
 
         //PROD
-        // get data from server
-        //
-        // let serverData = fetch(...);
-        // if (serverData){
-        //     dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: serverData });
-        // }
+        // const dbRef = ref(db);
+        // //get data from online db
+        // get(child(dbRef, process.env.EXPO_PUBLIC_DB_USER_PATH + userId + '/chats'))
+        //     .then(snapshot => {
+        //         if (snapshot.exists()) {
+        //             const server_data = snapshot.val();
+        //             dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'chatHistory', data: server_data } });
+        //         } else {
+        //             console.log("No data available");
+        //         }
+        //     });
     }, [])
 
     return (
@@ -165,32 +175,8 @@ export default HistoryContextProvider;
 
 
 const DATA_TEMPLATE = {
-    1711124571105: [
-        { assistant: { content: 'Lorem ipsum dolor, sit amet consectetur adipisicing elit.', format: 'Plain text' }, user: { content: 'Officiis in perferendis tempore fugit.' } },
+    1711124571105: 'LOCAL Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
 
-        { assistant: { content: 'Accusantium neque fugiat possimus eligendi, quae adipisci animi consequatur aliquam dolorum in excepturi iste deleniti magnam quis praesentium dignissimos ullam impedit necessitatibus eos! Sed in aspernatur quisquam inventore ipsam, tempore harum ex! Culpa consectetur amet ipsum modi doloribus ratione harum laboriosam, fugit quisquam accusantium dignissimos doloremque eligendi sint, dolorem ut voluptatibus nemo itaque excepturi exercitationem vel quod accusamus soluta aliquid?', format: 'Plain text' }, user: { content: 'Libero facere ipsam quasi dolor eius doloribus' } },
-
-    ],
-    1713124571101: [
-        {
-            assistant: { content: 'Provcilique aspernatur sunt incidunt, dolores veritatis aliquid dolorem dolore minima quam, ratione aut ea fugit recusandae illum distinctio, aperiam repudiandae fugiat consequatur! Laboriosam ipsum deserunt dolorum possimus, nesciunt pla am dolore corrupti hic, vitae sequi obcaecati incidunt facilis sint natus illo. Sunt, laboriosam ducimus illum accusantium excepturi sapiente tenetur obcaecati.', format: 'Plain text' }, user: { content: 'Nisi, aspernatur! Hic accusamus voluptatem, est delectus explicabo unde doloremque! Rerum iste facere assumenda beatae perspiciatis?' }
-        }
-    ],
-    1714124571165: [
-        {
-            assistant: { content: 'Provident hic quae ullam similique aspernatur sunt incidunt, dolores veritatis aliquid dolorem dolore minima quam, ratione aut ea fugit recusandae illum distinctio, aperiam repudiandae fugiat consequatur! Laboriosam ipsum deserunt dolorum possimus, nesciunt placeat quibusdam dolore corrupti hic, vitae sequi obcaecati incidunt facilis sint natus illo. Sunt, laboriosam ducimus illum accusantium excepturi sapiente tenetur obcaecati.', format: 'Plain text' }, user: { content: 'Rernatur! Hic accusamus voluptatem, est delectus explicabo unde doloremque! Rerum iste facere assumenda beatae perspiciatis?' }
-        }
-    ],
-    1714124572295: [
-        {
-            assistant: { content: 'Provident hic quae ullam similique aspernatur sunt incidunt, dolores veritatis aliquid dolorem dolore minima quam, ratione aut ea fugit recusandae illum distinctio, aperiam repudiandae fugiat consequatur! Laboriosam ipsum deserunt dolorum possimus, nesciunt placeat quibusdam dolore corrupti hic, vitae sequi obcaecati incidunt facilis sint natus illo. Sunt, laboriosam ducimus illum accusantium excepturi sapiente tenetur obcaecati.', format: 'Plain text' }, user: { content: 'Csamus voluptatem, est delectus explicabo unde doloremque! Rerum iste facere assumenda beatae perspiciatis?' }
-        }
-    ],
-    1714124581398: [
-        {
-            assistant: { content: 'Provident hic quae ullam similique aspernatur sunt incidunt, dolores veritatis aliquid dolorem dolore minima quam, ratione aut ea fugit recusandae illum distinctio, aperiam repudiandae fugiat consequatur! Laboriosam ipsum deserunt dolorum possimus, nesciunt placeat quibusdam dolore corrupti hic, vitae sequi obcaecati incidunt facilis sint natus illo. Sunt, laboriosam ducimus illum accusantium excepturi sapiente tenetur obcaecati.', format: 'Plain text' }, user: { content: ' Datur! Hic accusamus voluptatem, est delectus explicabo unde doloremque! Rerum iste facere assumenda beatae perspiciatis?' }
-        }
-    ]
 }
 
 const IMAGE_DATA_TEMPLATE = {

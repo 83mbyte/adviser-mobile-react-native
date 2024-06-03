@@ -105,7 +105,7 @@ const ListItem = ({ item, chooseChatFromHistory, deleteChatFromHistory }) => {
                             </View>
                             <Ionicons name="chevron-forward-outline" size={13} color="gray" />
                         </View>
-                        <Text style={styles.historyQuoteText}>{(item[1][0].user.content).slice(0, 40)}...</Text>
+                        <Text style={styles.historyQuoteText}>{(item[1]).slice(0, 40)}...</Text>
                     </TouchableOpacity>
                 </View>
             </Swipeable>
