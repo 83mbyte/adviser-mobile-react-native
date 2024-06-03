@@ -5,11 +5,13 @@ import OpacityWrapper from '../../../components/Wrappers/OpacityWrapper';
 import { useHistoryContext } from '../../../context/HistoryContextProvider';
 
 import { useAttachContext } from '../../../context/AttachContextProvider';
-import { Image, Text, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import WarningModalContent from '../../../components/Modals/WarningModal/WarningModalContent';
 
 import ModalContainer from '../../../components/Modals/ModalContainer';
 import ImagePickerModalContent from '../../../components/Modals/ImagePicker/ImagePickerModalContent';
+import ZoomImageModalContent from '../../../components/Modals/ZoomImage/ZoomImageModalContent';
+
 
 
 
@@ -22,7 +24,8 @@ const ChatContainer = ({ navigation, route }) => {
     const addHistoryItem = (value) => historyContextData.addHistoryItem(value);
 
     const [showModal, setShowModal] = useState(false);
-    const [showWarningModal, setShowWarningModal] = useState(false);
+    const [showWarningModal, setShowWarningModal] = useState({ show: false, message: null });
+    const [showZoomImage, setShowZoomImage] = useState({ show: false, imageSource: null });
 
     const attachContextData = useAttachContext();
     const attachmentsPickerModal = attachContextData.data.showPickerModal;
@@ -32,17 +35,17 @@ const ChatContainer = ({ navigation, route }) => {
     const submitChatForm = (value) => {
 
         if (!historyId) {
-            alert('something wrong..');
-            // TODO add modal warning
-            // add modal warning
+
+            setShowWarningModal({ show: true, message: `Unexpected error.` });
             return { type: 'Error', message: 'Something wrong..' }
         }
         if (attachmentsArray.length > 0 && (!value || value == '' || value == undefined)) {
-            setShowWarningModal(true);
+            setShowWarningModal({ show: true, message: `You are trying to send attachments only. There is no message/instruction provided, it may cause to unexpected results.` });
             return { type: 'Error', message: 'No comments to the image provided.' }
         }
         if (!value || value == '' || value == undefined) {
-            alert('no message to send');
+
+            setShowWarningModal({ show: true, message: `You are trying to submit an empty message. It is not allowed.` });
             return { message: 'No message to send.', type: 'Error' }
         }
         // DEV template data
@@ -55,7 +58,7 @@ const ChatContainer = ({ navigation, route }) => {
                     return (
 
                         <View style={{ flexDirection: 'column' }} key={index}>
-                            <Image source={{ uri: item }} style={{ width: 100, height: 100, }} />
+                            <TouchableOpacity onLongPress={() => setShowZoomImage({ show: true, imageSource: item })}><Image source={{ uri: item }} style={{ width: 100, height: 100, marginBottom: 5 }} /></TouchableOpacity>
                             <Text>{value}</Text>
                         </View>
 
@@ -118,12 +121,20 @@ const ChatContainer = ({ navigation, route }) => {
             }
             {
                 // empty message modal
-                showWarningModal &&
-                <ModalContainer modalVisible={showWarningModal} callbackCancel={() => setShowWarningModal(false)}>
+                showWarningModal.show &&
+                <ModalContainer modalVisible={showWarningModal.show} callbackCancel={() => setShowWarningModal({ show: false, message: null })}>
                     <WarningModalContent
-                        message={'You are trying to send attachments only. There is no message/instruction provided, it may cause to unexpected results.'}
+                        // message={'You are trying to send attachments only. There is no message/instruction provided, it may cause to unexpected results.'}
+                        message={showWarningModal.message}
                         buttons={[{ title: 'OK', type: 'solid' }]}
                     />
+                </ModalContainer>
+            }
+            {
+                // modal zooom image
+                showZoomImage.show &&
+                <ModalContainer modalVisible={showZoomImage.show} callbackCancel={() => setShowZoomImage(false)} customHeight={'50%'}>
+                    <ZoomImageModalContent imageSource={showZoomImage.imageSource} />
                 </ModalContainer>
             }
         </>
