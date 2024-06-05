@@ -9,15 +9,15 @@ import HistorySwipeableList from './HistorySwipeableList';
 const HistoryContainer = ({ navigation, route }) => {
     const historyContextData = useHistoryContext();
 
-    const history = historyContextData.data.chatHistory.history;
+    const history = historyContextData.data.chatHistory.historyIndexes;
 
     const chooseChatFromHistory = (chatId) => {
-        historyContextData.setHistoryId({ path: 'chatHistory', key: chatId });
+        historyContextData.setChatHistoryId(chatId);
         navigation.goBack();
     }
 
     const deleteChatFromHistory = (chatId) => {
-        historyContextData.deleteHistoryItem({ path: 'chatHistory', key: chatId })
+        historyContextData.deleteChatHistoryItem(chatId)
     }
 
     return (

@@ -1,7 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useReducer } from "react";
 import { db } from "../firebaseConfig";
-import { get, onValue, ref, child } from "firebase/database";
+import { get, ref, child, update } from "firebase/database";
 import { useAuthContext } from "./AuthContextProvider";
+
+const dbRef = ref(db);
+const DB_CHAT_PATH = process.env.EXPO_PUBLIC_DB_CHAT_PATH;
+const DB_USER_PATH = process.env.EXPO_PUBLIC_DB_USER_PATH;
 
 const HistoryContext = createContext();
 
@@ -11,97 +15,212 @@ const initialState = {
 
     chatHistory: {
         currentId: null,
-        history: {}
+        history: {},
+        historyIndexes: {}
+
     },
-    imagesHistory: {
-        currentId: null,
-        history: {}
-    }
+    // imagesHistory: {
+    //     currentId: null,
+    //     history: {}
+    // }
 }
+
+
+// const reducer = (prevState, action) => {
+//     switch (action.type) {
+//         case 'GET-HISTORY-INDEXES': {
+//             return {
+//                 ...prevState,
+//                 [action.payload.path]: {
+//                     ...prevState[action.payload.path],
+//                     historyIndexes: action.payload.data
+//                 }
+//             }
+//         }
+//         case 'ADD_HISTORY_FROM_SERVER':
+//             return {
+//                 ...prevState,
+//                 [action.payload.path]: {
+//                     ...prevState[action.payload.path],
+//                     history: action.payload.data
+//                 }
+//             }
+
+//         case 'SET_HISTORY_ID':
+
+//             return {
+//                 ...prevState,
+//                 [action.payload.path]: {
+//                     ...prevState[action.payload.path],
+//                     currentId: action.payload.key
+//                 }
+//             }
+//         case 'DELETE_HISTORY_ITEM':
+//             const { [action.payload.key]: removedData, ...restData } = prevState[action.payload.path]['history'];
+//             return {
+//                 ...prevState,
+//                 [action.payload.path]: {
+//                     ...prevState[action.payload.path],
+//                     history: restData
+//                 }
+//             }
+//         case 'ADD_HISTORY_ITEM':
+
+//             // add item to the history state if the historyID already exists in the state
+//             if ((prevState[action.payload.path]) && prevState[action.payload.path]['history'][action.payload.historyId]) {
+
+//                 return {
+//                     ...prevState,
+//                     [action.payload.path]: {
+//                         ...prevState[action.payload.path],
+//                         history: {
+//                             ...prevState[action.payload.path]['history'],
+
+//                             [action.payload.historyId]: [
+//                                 ...prevState[action.payload.path]['history'][action.payload.historyId],
+//                                 action.payload.value
+//                             ]
+//                         }
+//                     }
+//                 }
+
+//             }
+//             return {
+//                 ...prevState,
+//                 [action.payload.path]: {
+//                     ...prevState[action.payload.path],
+//                     history: {
+//                         ...prevState[action.payload.path]['history'],
+//                         [action.payload.historyId]: [
+//                             action.payload.value
+//                         ]
+//                     }
+
+//                 }
+//             }
+
+//         case 'DELETE_IMAGE':
+
+//             return {
+//                 ...prevState,
+//                 imagesHistory: {
+//                     ...prevState.imagesHistory,
+//                     history: {
+//                         ...prevState.imagesHistory.history,
+//                         [action.payload.key]:
+//                             (prevState.imagesHistory.history[action.payload.key]).filter(
+//                                 (item) => item.source !== action.payload.imageSource
+//                             )
+//                     }
+//                 }
+//             }
+
+//         default:
+//             return { ...prevState }
+//     }
+
+// }
 
 
 const reducer = (prevState, action) => {
     switch (action.type) {
-        case 'ADD_HISTORY_FROM_SERVER':
+        case 'SET-CHAT-HISTORY-ID':
             return {
                 ...prevState,
-                [action.payload.path]: {
-                    ...prevState[action.payload.path],
-                    history: action.payload.data
+                ['chatHistory']: {
+                    ...prevState['chatHistory'],
+                    currentId: action.payload
                 }
+
             }
 
-        case 'SET_HISTORY_ID':
-
+        case 'GET-HISTORY-INDEXES': {
             return {
                 ...prevState,
-                [action.payload.path]: {
-                    ...prevState[action.payload.path],
-                    currentId: action.payload.key
+                ['chatHistory']: {
+                    ...prevState['chatHistory'],
+                    historyIndexes: action.payload
                 }
             }
-        case 'DELETE_HISTORY_ITEM':
-            const { [action.payload.key]: removedData, ...restData } = prevState[action.payload.path]['history'];
+        }
+        case 'GET-HISTORY-BY-PROVIDED-ID':
             return {
                 ...prevState,
-                [action.payload.path]: {
-                    ...prevState[action.payload.path],
-                    history: restData
+                ['chatHistory']: {
+                    ...prevState['chatHistory'],
+                    ['history']: {
+                        ...prevState['chatHistory']['history'],
+                        [action.payload.id]: action.payload.data
+
+                    }
                 }
             }
-        case 'ADD_HISTORY_ITEM':
+        case 'ADD-CHAT-HISTORY-ITEM':
 
-            // add item to the history state if the historyID already exists in the state
-            if ((prevState[action.payload.path]) && prevState[action.payload.path]['history'][action.payload.historyId]) {
+            //check if the current id in the history state
+            if (prevState['chatHistory']['history'][action.payload.historyId]) {
 
                 return {
                     ...prevState,
-                    [action.payload.path]: {
-                        ...prevState[action.payload.path],
+                    chatHistory: {
+                        ...prevState.chatHistory,
                         history: {
-                            ...prevState[action.payload.path]['history'],
-
+                            ...prevState.chatHistory.history,
                             [action.payload.historyId]: [
-                                ...prevState[action.payload.path]['history'][action.payload.historyId],
+                                ...prevState.chatHistory.history[action.payload.historyId],
                                 action.payload.value
                             ]
                         }
                     }
                 }
+            } else {
 
-            }
-            return {
-                ...prevState,
-                [action.payload.path]: {
-                    ...prevState[action.payload.path],
-                    history: {
-                        ...prevState[action.payload.path]['history'],
-                        [action.payload.historyId]: [
-                            action.payload.value
-                        ]
-                    }
-
-                }
-            }
-
-        case 'DELETE_IMAGE':
-
-            return {
-                ...prevState,
-                imagesHistory: {
-                    ...prevState.imagesHistory,
-                    history: {
-                        ...prevState.imagesHistory.history,
-                        [action.payload.key]:
-                            (prevState.imagesHistory.history[action.payload.key]).filter(
-                                (item) => item.source !== action.payload.imageSource
-                            )
+                return {
+                    ...prevState,
+                    chatHistory: {
+                        ...prevState.chatHistory,
+                        history: {
+                            ...prevState.chatHistory.history,
+                            [action.payload.historyId]: [action.payload.value]
+                        },
+                        historyIndexes: {
+                            ...prevState.chatHistory.historyIndexes,
+                            [action.payload.historyId]: action.payload.value.user.content
+                        }
                     }
                 }
             }
+
+        case 'DELETE-CHAT-HISTORY-ITEM':
+
+            const { [action.payload]: removedData, ...restDataIndexes } = prevState.chatHistory.historyIndexes;
+
+            if (prevState.chatHistory.history && prevState.chatHistory.history[action.payload]) {
+                // remove chat history + indexes from local state
+                const { [action.payload]: removedDataHistory, ...restDataHistory } = prevState.chatHistory.history;
+
+                return {
+                    ...prevState,
+                    chatHistory: {
+                        ...prevState['chatHistory'],
+                        history: restDataHistory,
+                        historyIndexes: restDataIndexes
+
+                    }
+                }
+            }
+            // remove indexes from local state
+            return {
+                ...prevState,
+                ['chatHistory']: {
+                    ...prevState['chatHistory'],
+                    historyIndexes: restDataIndexes
+                }
+            }
+
 
         default:
-            return { ...prevState }
+            return prevState
     }
 
 }
@@ -113,55 +232,97 @@ const HistoryContextProvider = ({ children }) => {
 
     const historyContextData = useMemo(() => ({
         data: historyState,
+        setChatHistoryId: (valueId) => {
+            if (valueId) {
+                // check if 'valueId' exists at local state history, if NOT - request history data with such 'valueId' from server  
+                if (historyState.chatHistory.history && !historyState.chatHistory.history[valueId]) {
 
-        setHistoryId: ({ path, key }) => {
-            if (path && key) {
+                    get(child(dbRef, DB_CHAT_PATH + userId + '/' + valueId))
+                        .then(snapshot => {
+                            if (snapshot.exists()) {
+                                const server_data = snapshot.val();
+                                dispatch({ type: 'GET-HISTORY-BY-PROVIDED-ID', payload: { id: valueId, data: server_data } })
+                            } else {
+                                console.log("No data available");
+                            }
+                        });
+                }
                 dispatch(
-                    { type: 'SET_HISTORY_ID', payload: { path, key } }
+                    { type: 'SET-CHAT-HISTORY-ID', payload: valueId }
                 )
             } else {
                 dispatch(
-                    { type: 'SET_HISTORY_ID', payload: { path, key: Date.now() } }
+                    { type: 'SET-CHAT-HISTORY-ID', payload: Date.now() }
                 )
             }
         },
-        deleteHistoryItem: ({ path, key }) => {
-            dispatch({
-                type: 'DELETE_HISTORY_ITEM',
-                payload: { path, key }
-            })
+        addChatHistoryItem: ({ historyId, value }) => {
+            // TODO
+            // TODO   fix sending attachments 
+            // TODO
+            // TODO
+            // TODO
+
+            // send data to server
+            // const dbRef = ref(db);
+            const updates = {};
+
+            if (historyState.chatHistory.history && historyState.chatHistory.history[historyId]) {
+                // if history of current chat exists
+                updates[DB_CHAT_PATH + userId + '/' + historyId] = [...historyState.chatHistory.history[historyId], value];
+                // update(dbRef, updates);
+            } else {
+                //if no history  
+                updates[DB_CHAT_PATH + userId + '/' + historyId] = [value];
+                updates[DB_USER_PATH + userId + '/chats'] = { ...historyState.chatHistory.historyIndexes, [historyId]: value.user.content }
+            }
+            update(dbRef, updates)
+                .then(() => {
+                    // update local state 
+                    dispatch({ type: 'ADD-CHAT-HISTORY-ITEM', payload: { historyId, value } });
+                })
+                .catch((error) => console.log('error while add chat history item '));
+
+
         },
-        addHistoryItem: ({ path, historyId, value }) => {
-            dispatch({
-                type: 'ADD_HISTORY_ITEM',
-                payload: { path, historyId, value }
-            })
+        deleteChatHistoryItem: (historyId) => {
+            const updates = {};
+
+            const { [historyId]: removedData, ...restDataIndexes } = historyState.chatHistory.historyIndexes;
+
+            updates[DB_USER_PATH + userId + '/chats'] = { ...restDataIndexes };
+            updates[DB_CHAT_PATH + userId + '/' + historyId] = null;
+
+            update(dbRef, updates)
+                .then(() => dispatch({ type: 'DELETE-CHAT-HISTORY-ITEM', payload: historyId }))
+                .catch((error) => {
+                    // The write failed...
+                    console.log('error while delete chat item')
+                });
         },
-        deleteImageFromHistory: ({ key, imageSource }) => {
-            dispatch({
-                type: 'DELETE_IMAGE',
-                payload: { key, imageSource }
-            })
-        }
+
+
+
     }), [historyState]);
 
     useEffect(() => {
         // dev 
-        dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'chatHistory', data: DATA_TEMPLATE } });
+        // dispatch({ type: 'GET-HISTORY-INDEXES', payload: DATA_TEMPLATE });
         // dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'imagesHistory', data: IMAGE_DATA_TEMPLATE } });
 
         //PROD
         // const dbRef = ref(db);
-        // //get data from online db
-        // get(child(dbRef, process.env.EXPO_PUBLIC_DB_USER_PATH + userId + '/chats'))
-        //     .then(snapshot => {
-        //         if (snapshot.exists()) {
-        //             const server_data = snapshot.val();
-        //             dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'chatHistory', data: server_data } });
-        //         } else {
-        //             console.log("No data available");
-        //         }
-        //     });
+        //get data from online db
+        get(child(dbRef, DB_USER_PATH + userId + '/chats'))
+            .then(snapshot => {
+                if (snapshot.exists()) {
+                    const server_data = snapshot.val();
+                    // dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'chatHistory', data: server_data } });
+                    dispatch({ type: 'GET-HISTORY-INDEXES', payload: server_data });
+                } else {
+                    console.log("No data available");
+                }
+            });
     }, [])
 
     return (

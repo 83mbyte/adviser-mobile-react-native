@@ -18,10 +18,11 @@ import ZoomImageModalContent from '../../../components/Modals/ZoomImage/ZoomImag
 const ChatContainer = ({ navigation, route }) => {
     const historyContextData = useHistoryContext();
     const history = historyContextData.data.chatHistory.history;
+    const historyIndexes = historyContextData.data.chatHistory.historyIndexes;
     const historyId = historyContextData.data.chatHistory.currentId;
 
-    const setHistoryId = (obj) => historyContextData.setHistoryId(obj);
-    const addHistoryItem = (value) => historyContextData.addHistoryItem(value);
+    const setHistoryId = (obj) => historyContextData.setChatHistoryId(obj);
+    const addHistoryItem = (value) => historyContextData.addChatHistoryItem(value);
 
     const [showModal, setShowModal] = useState(false);
     const [showWarningModal, setShowWarningModal] = useState({ show: false, message: null });
@@ -69,7 +70,7 @@ const ChatContainer = ({ navigation, route }) => {
         };
 
         // add to local history state
-        addHistoryItem({ path: 'chatHistory', historyId, value: userMessAndReply });
+        addHistoryItem({ historyId, value: userMessAndReply });
         return ({ type: 'Success' })
 
         // TODO  
@@ -80,7 +81,7 @@ const ChatContainer = ({ navigation, route }) => {
 
     useEffect(() => {
         if (!historyId) {
-            setHistoryId({ path: 'chatHistory' });
+            setHistoryId();
         }
     }, []);
 
@@ -89,7 +90,7 @@ const ChatContainer = ({ navigation, route }) => {
         <>
             <WhiteBottomWrapper keyId={'cardChat'} route={route}>
                 <OpacityWrapper keyId={'opacityChat'}>
-                    <ChatInterface navigation={navigation} setShowModal={setShowModal} history={history} historyId={historyId} submitChatForm={submitChatForm} />
+                    <ChatInterface navigation={navigation} setShowModal={setShowModal} history={history} historyId={historyId} historyIndexes={historyIndexes} submitChatForm={submitChatForm} />
                 </OpacityWrapper>
             </WhiteBottomWrapper>
 
@@ -105,7 +106,7 @@ const ChatContainer = ({ navigation, route }) => {
                             {
                                 title: 'AGREE',
                                 type: 'solid',
-                                callback: () => { setHistoryId({ path: 'chatHistory' }); attachContextData.clearAllItems(); }
+                                callback: () => { setHistoryId(); attachContextData.clearAllItems(); }
                             },
                             { title: 'Cancel', type: 'outline' }
                         ]}

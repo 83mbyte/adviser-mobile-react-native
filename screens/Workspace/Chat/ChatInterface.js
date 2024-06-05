@@ -6,7 +6,7 @@ import FooterInteractionContainer from '../../../components/FooterInteraction/Fo
 
 
 
-const ChatInterface = ({ navigation, setShowModal, history, historyId, submitChatForm }) => {
+const ChatInterface = ({ navigation, setShowModal, history, historyId, historyIndexes, submitChatForm }) => {
     const scrollRef = useRef(null);
 
     const renderMessages = (messageBlock) => {
@@ -29,7 +29,7 @@ const ChatInterface = ({ navigation, setShowModal, history, historyId, submitCha
 
     useEffect(() => {
 
-        if (history && Object.keys(history).length > 0) {
+        if (historyIndexes && Object.keys(historyIndexes).length > 0) {
             navigation.setOptions({
                 headerRight: () => (
                     <ChatHeaderRightButtons
