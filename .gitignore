@@ -31,11 +31,16 @@ yarn-error.*
 # local env files
 .env*.local
 .env
+functions/.env
+functions/.secret.local
 
 # typescript
 *.tsbuildinfo
  
 # additionally
 Comments.txt
-assets/splash_logo.png 
-lib/textData.js
+assets/splash_logo.png
+.firebaserc
+firebase-debug.log
+ui-debug.log
+firebase.json
