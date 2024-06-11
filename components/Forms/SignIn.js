@@ -3,6 +3,12 @@ import { StyleSheet, View } from 'react-native';
 import RedButton from '../Buttons/RedButton';
 import { useAuthContext } from '../../context/AuthContextProvider';
 import TextInputStyled from './Inputs/TextInputStyled';
+import AnimatedViewWrapper from '../Wrappers/AnimatedViewWrapper';
+
+import animationLibrary from '../../lib/animationConfig';
+
+const enterTransition = animationLibrary.Stretch.entering;
+const exitTransition = animationLibrary.Stretch.exiting;
 
 
 const emailPattern = new RegExp(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,5})+$/);
@@ -77,17 +83,19 @@ const SignIn = () => {
     }
 
     return (
-        <View style={styles.container}>
-            <TextInputStyled label='Email' value={formState.email.value} keyboardType={'email-address'} onChangeText={(val) => updateFormState('EMAIL', val)} isValid={formState.email.isValid} errorText={'incorrect email'} />
-            <TextInputStyled label='Password' value={formState.password.value} secureTextEntry={true} onChangeText={(val) => updateFormState('PASSWORD', val)} isValid={formState.password.isValid} errorText={'must be at least 6 chars long'} />
+        <AnimatedViewWrapper keyId={'signInForm'} entering={enterTransition.delay(100)} exiting={exitTransition}>
+            <View style={styles.container} >
+                <TextInputStyled label='Email' value={formState.email.value} keyboardType={'email-address'} onChangeText={(val) => updateFormState('EMAIL', val)} isValid={formState.email.isValid} errorText={'incorrect email'} />
+                <TextInputStyled label='Password' value={formState.password.value} secureTextEntry={true} onChangeText={(val) => updateFormState('PASSWORD', val)} isValid={formState.password.isValid} errorText={'must be at least 6 chars long'} />
 
-            <View style={styles.buttonsContainer}>
-                <RedButton title='Sign In' variant='solid' callback={submitHandler} />
+                <View style={styles.buttonsContainer}>
+                    <RedButton title='Sign In' variant='solid' callback={submitHandler} />
+                </View>
+
+
+
             </View>
-
-
-
-        </View>
+        </AnimatedViewWrapper>
     );
 };
 
@@ -102,6 +110,6 @@ const styles = StyleSheet.create({
     buttonsContainer: {
         alignItems: 'center',
         marginTop: 5,
-        marginBottom: 50
+        marginBottom: 10
     }
 })

@@ -1,22 +1,22 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
-const RedButton = ({ title, variant = 'solid', size = 'md', disabled = false, callback }) => {
+const RedButton = ({ title, variant = 'solid', fullWidth = false, size = 'md', disabled = false, callback }) => {
 
     const buttonHeight = {
         sm: 47,
         md: 57,
-        lg: 67
+        lg: 67,
     };
     const buttonWidth = {
         sm: 139,
         md: 249,
-        lg: 249
+        lg: 249,
     };
     const buttonFontSize = {
         sm: 12,
         md: 16,
-        lg: 20
+        lg: 20,
     };
 
     return (
@@ -24,7 +24,7 @@ const RedButton = ({ title, variant = 'solid', size = 'md', disabled = false, ca
             style={
                 [
                     styles.containerButton.default, styles.containerButton[variant], disabled && styles.containerButton.disabled,
-                    { height: buttonHeight[size], width: buttonWidth[size] }
+                    { height: buttonHeight[size], width: fullWidth ? '100%' : buttonWidth[size] }
                 ]
             }
             onPress={callback}

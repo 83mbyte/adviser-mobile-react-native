@@ -226,7 +226,13 @@ const reducer = (prevState, action) => {
 }
 
 const HistoryContextProvider = ({ children }) => {
-    const userId = useAuthContext().data.user.uid;
+
+    const authContextData = useAuthContext();
+    let userId = null;
+    if (authContextData.data && authContextData.data.user) {
+
+        userId = authContextData.data.user.uid;
+    }
 
     const [historyState, dispatch] = useReducer(reducer, initialState);
 
@@ -296,7 +302,7 @@ const HistoryContextProvider = ({ children }) => {
             update(dbRef, updates)
                 .then(() => dispatch({ type: 'DELETE-CHAT-HISTORY-ITEM', payload: historyId }))
                 .catch((error) => {
-                    // The write failed...
+                    //  writing failed...
                     console.log('error while delete chat item')
                 });
         },
@@ -307,23 +313,27 @@ const HistoryContextProvider = ({ children }) => {
 
     useEffect(() => {
         // dev 
-        // dispatch({ type: 'GET-HISTORY-INDEXES', payload: DATA_TEMPLATE });
+        // if (userId) {
+
+        //     dispatch({ type: 'GET-HISTORY-INDEXES', payload: DATA_TEMPLATE });
+        // }
         // dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'imagesHistory', data: IMAGE_DATA_TEMPLATE } });
 
         //PROD
-        // const dbRef = ref(db);
+        //
         //get data from online db
-        get(child(dbRef, DB_USER_PATH + userId + '/chats'))
-            .then(snapshot => {
-                if (snapshot.exists()) {
-                    const server_data = snapshot.val();
-                    // dispatch({ type: 'ADD_HISTORY_FROM_SERVER', payload: { path: 'chatHistory', data: server_data } });
-                    dispatch({ type: 'GET-HISTORY-INDEXES', payload: server_data });
-                } else {
-                    console.log("No data available");
-                }
-            });
-    }, [])
+        if (userId) {
+            get(child(dbRef, DB_USER_PATH + userId + '/chats'))
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const server_data = snapshot.val();
+                        dispatch({ type: 'GET-HISTORY-INDEXES', payload: server_data });
+                    } else {
+                        console.log("No data available");
+                    }
+                });
+        }
+    }, [userId])
 
     return (
         <HistoryContext.Provider value={historyContextData}>
@@ -336,7 +346,7 @@ export default HistoryContextProvider;
 
 
 const DATA_TEMPLATE = {
-    1711124571105: 'LOCAL Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+    1711124571105: 'LOCA8L Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
 
 }
 

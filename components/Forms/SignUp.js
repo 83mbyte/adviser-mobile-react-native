@@ -3,6 +3,12 @@ import { StyleSheet, View } from 'react-native';
 import RedButton from '../Buttons/RedButton';
 import { useAuthContext } from '../../context/AuthContextProvider';
 import TextInputStyled from './Inputs/TextInputStyled';
+import AnimatedViewWrapper from '../Wrappers/AnimatedViewWrapper';
+
+import animationLibrary from '../../lib/animationConfig';
+
+const enterTransition = animationLibrary.Stretch.entering;
+const exitTransition = animationLibrary.Stretch.exiting;
 
 const initialState = {
     email: { isValid: true, value: null },
@@ -85,18 +91,21 @@ const SignUp = () => {
 
     return (
 
-        <View style={styles.container}>
+        <AnimatedViewWrapper keyId={'signUpForm'} entering={enterTransition.delay(100)} exiting={exitTransition}>
+            <View style={styles.container}>
 
-            <TextInputStyled label={'Email'} value={formState.email.value} onChangeText={(val) => updateFormState('EMAIL', val)} keyboardType={'email-address'} isValid={formState.email.isValid} errorText={'Incorrect email'} />
-            <TextInputStyled label={'Password'} value={formState.password.value} onChangeText={(val) => updateFormState('PASSWORD', val)} secureTextEntry={true} isValid={formState.password.isValid} errorText={'Must be at least 6 chars long'} />
-            <TextInputStyled label={'Full Name'} value={formState.fullName.value} onChangeText={(val) => updateFormState('FULLNAME', val)} />
+                <TextInputStyled label={'Email'} value={formState.email.value} onChangeText={(val) => updateFormState('EMAIL', val)} keyboardType={'email-address'} isValid={formState.email.isValid} errorText={'Incorrect email'} />
+                <TextInputStyled label={'Password'} value={formState.password.value} onChangeText={(val) => updateFormState('PASSWORD', val)} secureTextEntry={true} isValid={formState.password.isValid} errorText={'Must be at least 6 chars long'} />
+                <TextInputStyled label={'Full Name'} value={formState.fullName.value} onChangeText={(val) => updateFormState('FULLNAME', val)} />
 
-            <View style={styles.buttonsContainer}>
-                <RedButton title='Sign Up' variant='solid' callback={submitHandler} />
+                <View style={styles.buttonsContainer}>
+                    <RedButton title='Sign Up' variant='solid' callback={submitHandler} />
+
+                </View>
 
             </View>
 
-        </View>
+        </AnimatedViewWrapper>
     );
 };
 
@@ -110,6 +119,6 @@ const styles = StyleSheet.create({
     buttonsContainer: {
         alignItems: 'center',
         marginTop: 5,
-        marginBottom: 50
+        marginBottom: 10
     }
 })

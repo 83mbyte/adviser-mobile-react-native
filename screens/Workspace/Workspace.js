@@ -10,7 +10,7 @@ const Workspace = ({ navigation, route }) => {
         <View style={styles.container}>
 
             <View style={styles.logoContainer}>
-                <LogoApp route={route} />
+                <LogoApp route={route} color='white' size='lg' />
             </View>
 
             <BottomNavigation navigation={navigation} />

@@ -4,7 +4,8 @@ import SettingsItemButton from '../../../components/Buttons/SettingsItemButton';
 
 const data = [
     { id: 1, value: 'Chat settings', icon: 'chatbubbles-outline', iconColor: '#87CEEB', iconSize: 22 },
-    { id: 2, value: 'Images settings', icon: 'images-outline', iconColor: '#5F9EA0', iconSize: 22 }
+    { id: 2, value: 'Images settings', icon: 'images-outline', iconColor: '#5F9EA0', iconSize: 22 },
+    { id: 3, value: 'Profile settings', icon: 'person-circle-outline', iconColor: '#A15F9E', iconSize: 22 },
 ];
 
 const SettingsList = ({ navigation }) => {

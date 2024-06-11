@@ -10,13 +10,16 @@ const SettingsItemButton = ({ data, navigation }) => {
         switch (data.value) {
             case 'Chat settings':
                 pathToNavigate = 'Chat Settings';
-                settingsStatePath = 'chatSettings'
+                settingsStatePath = 'chatSettings';
                 break;
 
             case 'Images settings':
                 pathToNavigate = 'Images Settings';
                 settingsStatePath = 'imagesSettings';
                 break;
+            case 'Profile settings':
+                pathToNavigate = 'Profile settings';
+                settingsStatePath = 'profileSettings';
 
             default:
                 break;
