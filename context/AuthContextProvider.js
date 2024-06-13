@@ -75,6 +75,7 @@ export const AuthContextProvider = ({ children }) => {
                         user: { ...res.payload.user }
                     }
                 })
+                return { status: 'Success' }
             } else {
                 console.log('Error while Sign In',);
                 dispatch({ type: 'NOT_LOGGED' })

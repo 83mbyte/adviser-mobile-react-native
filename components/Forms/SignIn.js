@@ -67,7 +67,7 @@ const reducer = (prevState, action) => {
 
 
 
-const SignIn = () => {
+const SignIn = ({ navigation }) => {
     const { signIn } = useAuthContext();
 
     const [formState, dispatch] = useReducer(reducer, initialState);
@@ -78,7 +78,12 @@ const SignIn = () => {
 
     const submitHandler = async () => {
         if ((formState.email.isValid && formState.email.value) && (formState.password.isValid && formState.password.value)) {
-            await signIn(formState.email.value, formState.password.value);
+            let res = await signIn(formState.email.value, formState.password.value);
+
+            if (res && res.status == 'Success') {
+                updateFormState('PASSWORD', '');
+                navigation.navigate('Workspace');
+            }
         }
     }
 
@@ -91,9 +96,6 @@ const SignIn = () => {
                 <View style={styles.buttonsContainer}>
                     <RedButton title='Sign In' variant='solid' callback={submitHandler} />
                 </View>
-
-
-
             </View>
         </AnimatedViewWrapper>
     );

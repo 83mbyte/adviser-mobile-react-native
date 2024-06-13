@@ -4,13 +4,12 @@ import { View, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback, Platfor
 
 import SignIn from '../../components/Forms/SignIn';
 import SignUp from '../../components/Forms/SignUp';
-import TitleHeading from '../../components/TitleHeading/TitleHeading';
 import LogoApp from '../../components/LogoApp/LogoApp';
 import TextButton from '../../components/Buttons/TextButton';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const AuthModal = () => {
+const AuthModal = ({ navigation }) => {
     const ins = useSafeAreaInsets();
     const [page, setPage] = useState('Sign In');
 
@@ -28,7 +27,7 @@ const AuthModal = () => {
 
                         {
                             page === 'Sign In'
-                                ? <SignIn />
+                                ? <SignIn navigation={navigation} />
                                 : <SignUp />
                         }
 

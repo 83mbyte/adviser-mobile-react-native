@@ -66,7 +66,7 @@ const Start = () => {
     return (
         <View style={{ flex: 1 }}>
 
-            <RootStack.Navigator>
+            <RootStack.Navigator  >
                 {
                     (!authState?.data?.user)
                         ? <RootStack.Group screenOptions={{ headerShown: false }} >
@@ -89,8 +89,21 @@ const Start = () => {
                                 })} />
 
                         </RootStack.Group>
-                        : <RootStack.Group screenOptions={{ gestureEnabled: false }}>
+                        : <RootStack.Group screenOptions={{ gestureEnabled: false }} >
+
                             <RootStack.Screen name="Workspace" component={Workspace} options={{ headerShown: false, gestureDirection: 'vertical' }} />
+                            <RootStack.Screen name="AuthModal"
+                                component={AuthModal}
+
+                                options={() => ({
+                                    // headerShown: false,
+                                    // gestureDirection: 'vertical',
+                                    // presentation: 'fullScreenModal',
+                                    // headerTransparent: true,
+                                    ...COMMON_OPTIONS,
+                                    headerTitle: '',
+                                    // headerLeft: () => <BackButtonHeader navigation={navigation} />
+                                })} />
                             {
 
                                 NAVIGATION_SCREENS.map((screen, index) => {
