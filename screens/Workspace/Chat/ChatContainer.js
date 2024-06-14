@@ -12,9 +12,11 @@ import ModalContainer from '../../../components/Modals/ModalContainer';
 import ImagePickerModalContent from '../../../components/Modals/ImagePicker/ImagePickerModalContent';
 import ZoomImageModalContent from '../../../components/Modals/ZoomImage/ZoomImageModalContent';
 
+import { connectFunctionsEmulator, httpsCallable, } from "firebase/functions";
 
-
-
+import { cloudFunctions } from '../../../firebaseConfig';
+import { useSettingsContext } from '../../../context/SettingsContextProvider';
+import { promptTemplatesAPI } from '../../../lib/promptsAPI';
 const ChatContainer = ({ navigation, route }) => {
     const historyContextData = useHistoryContext();
     const history = historyContextData.data.chatHistory.history;
@@ -27,16 +29,17 @@ const ChatContainer = ({ navigation, route }) => {
     const [showModal, setShowModal] = useState(false);
     const [showWarningModal, setShowWarningModal] = useState({ show: false, message: null });
     const [showZoomImage, setShowZoomImage] = useState({ show: false, imageSource: null });
+    const [isLoading, setIsLoading] = useState(false);
 
     const attachContextData = useAttachContext();
     const attachmentsPickerModal = attachContextData.data.showPickerModal;
     const attachmentsArray = attachContextData.data.attachmentsArray;
 
+    const settingsContextData = useSettingsContext();
+    const { replyLength, replyStyle, replyTone, replyFormat, replyCount, systemVersion, } = settingsContextData.data.chatSettings;
 
-    const submitChatForm = (value) => {
-
+    const checkForWarnings = (value) => {
         if (!historyId) {
-
             setShowWarningModal({ show: true, message: `Unexpected error.` });
             return { type: 'Error', message: 'Something wrong..' }
         }
@@ -49,33 +52,141 @@ const ChatContainer = ({ navigation, route }) => {
             setShowWarningModal({ show: true, message: `You are trying to submit an empty message. It is not allowed.` });
             return { message: 'No message to send.', type: 'Error' }
         }
-        // DEV template data
-        const userMessAndReply = {
-            assistant: {
-                content: 'Explicabo voluptatum veritatis temporibus ad voluptatibus officiis qu?', format: 'Lorem ipsum'
-            },
-            user: {
-                content: attachmentsArray.length > 0 ? attachmentsArray.map((item, index) => {
-                    return (
 
-                        <View style={{ flexDirection: 'column' }} key={index}>
-                            <TouchableOpacity onLongPress={() => setShowZoomImage({ show: true, imageSource: item })}><Image source={{ uri: item }} style={{ width: 100, height: 100, marginBottom: 5 }} /></TouchableOpacity>
-                            <Text>{value}</Text>
-                        </View>
+        return { type: 'Success', message: 'No warnings detected.' }
+    }
+    const createSystemMessage = () => {
+        switch (replyFormat) {
+            case 'Plain text':
+                return systemMessage = promptTemplatesAPI.default({ replyTone, replyLength, replyStyle });
+                break;
+            case 'HTML':
+                return systemMessage = promptTemplatesAPI.replyAsHTML({ replyTone, replyLength, replyStyle });
+                break;
+            default:
+                return systemMessage = promptTemplatesAPI.default({ replyTone, replyLength, replyStyle });
+                break;
+        }
+    }
 
-                    )
+    const createDiscussionContext = (arrayDataOfCurrentHistory) => {
+
+        let arrayDiscussionContext = [{ role: 'user', content: arrayDataOfCurrentHistory[0].user.content }];
+
+        switch (systemVersion) {
+            case 'GPT-4':
+                if (arrayDataOfCurrentHistory.length > 0) {
+                    for (let i = 0; i <= arrayDataOfCurrentHistory.length - 1; i++) {
+                        arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[i].assistant.content })
+                    }
                 }
-                ) : value
-            }
-        };
+                break;
+            case 'GPT-3.5':
+                if (arrayDataOfCurrentHistory.length >= 2) {
+                    arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[arrayDataOfCurrentHistory.length - 2].assistant.content });
+                    arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[arrayDataOfCurrentHistory.length - 1].assistant.content });
+                }
+                else {
+                    arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[arrayDataOfCurrentHistory.length - 1].assistant.content });
+                }
 
-        // add to local history state
-        addHistoryItem({ historyId, value: userMessAndReply });
-        return ({ type: 'Success' })
+            default:
+                arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[arrayDataOfCurrentHistory.length - 1].assistant.content });
+                break;
+        }
+
+        return arrayDiscussionContext;
+    }
+    const createChatItemsAndAddToHistory = ({ userContent, assistantContent, format, attachmentsArray }) => {
+
+        let dialogItems = {};
+        dialogItems.assistant = { content: assistantContent, format: format };
+
+        if (attachmentsArray && attachmentsArray.length > 0) {
+            // to show attachments in the user message...
+            // TODO must be fixed saving the attachemnts to server or phone
+            // TODO must be fixed saving the attachemnts to server or phone
+            // TODO must be fixed saving the attachemnts to server or phone
+            // TODO must be fixed saving the attachemnts to server or phone
+
+            dialogItems.user = {
+                content: userContent,
+                showAttachments: attachmentsArray
+                // <>
+                //     {
+                //         attachmentsArray.map((item, index) => {
+                //             return (<View style={{ flexDirection: 'column' }} key={index}>
+                //                 <TouchableOpacity onLongPress={() => setShowZoomImage({ show: true, imageSource: item })}><Image source={{ uri: item }} style={{ width: 100, height: 100, marginBottom: 5 }} /></TouchableOpacity>
+                //             </View>)
+                //         })
+
+                //     }
+                //     <Text>{userContent}</Text>
+                // </>
+            }
+        } else {
+            dialogItems.user = { content: userContent, showAttachments: null };
+        }
+
+        addHistoryItem({ historyId, data: dialogItems })
+
+    }
+
+
+    const submitChatForm = async (value) => {
+
+
+        let noWarnings = checkForWarnings(value);
+
+        if (noWarnings.type == 'Success') {
+
+            let discussionContext;
+            let systemMessage;
+            setIsLoading(true)
+            systemMessage = createSystemMessage(systemMessage);
+
+            // create prompts allows to create a conversation context
+            if (history[historyId] && history[historyId].length > 0) {
+                //console.log('inn..', history[historyId])
+                discussionContext = [systemMessage, ...createDiscussionContext(history[historyId])];
+                discussionContext.push({ role: 'user', content: value })
+            } else {
+                discussionContext = [systemMessage, { role: 'user', content: value }];
+            }
+
+
+            // DEV emulator settings
+            try {
+                connectFunctionsEmulator(cloudFunctions, process.env.EXPO_PUBLIC_EMULATOR_PATH, 5001);
+                // call "requestToAssistant" cloud function..
+                const requestToAssistant = httpsCallable(cloudFunctions, 'requestToAssistant', { limitedUseAppCheckTokens: true });
+
+                // return of the "requestToAssistant" result..
+                return await requestToAssistant({ tokens: 4000, systemVersion, messagesArray: discussionContext })
+                    .then((funcRespond) => {
+
+                        if (funcRespond.data.type == 'Success') {
+                            //  add to local history state and to show in UI
+                            createChatItemsAndAddToHistory({ userContent: value, assistantContent: funcRespond.data.payload[0].message.content, format: replyFormat, attachmentsArray })
+                        }
+                        setIsLoading(false);
+                        return { type: 'Success' }
+                    })
+            } catch (error) {
+                console.log('error')
+                setIsLoading(false)
+            }
+        }
+
 
         // TODO  
-        // TODO create a submit to server to save history 
-        // TODO   
+        // TODO  
+        // TODO  
+        // TODO     1)  add settings to request.. temperature, format and so on...  check settingsContext
+        // TODO      add settings to request.. temperature, format and so on...  check settingsContext
+        // TODO  
+
+
     }
 
 
@@ -90,7 +201,7 @@ const ChatContainer = ({ navigation, route }) => {
         <>
             <WhiteBottomWrapper keyId={'cardChat'} route={route}>
                 <OpacityWrapper keyId={'opacityChat'}>
-                    <ChatInterface navigation={navigation} setShowModal={setShowModal} history={history} historyId={historyId} historyIndexes={historyIndexes} submitChatForm={submitChatForm} />
+                    <ChatInterface navigation={navigation} isLoading={isLoading} setShowModal={setShowModal} history={history} historyId={historyId} historyIndexes={historyIndexes} submitChatForm={submitChatForm} />
                 </OpacityWrapper>
             </WhiteBottomWrapper>
 

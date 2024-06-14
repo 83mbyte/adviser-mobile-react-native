@@ -3,13 +3,16 @@ import { View, StyleSheet, FlatList } from 'react-native';
 import ChatMessage from './ChatMessage';
 import ChatHeaderRightButtons from '../../../components/Buttons/ChatHeaderRightButtons';
 import FooterInteractionContainer from '../../../components/FooterInteraction/FooterInteractionContainer';
+import Animated, { Keyframe } from 'react-native-reanimated';
 
 
 
-const ChatInterface = ({ navigation, setShowModal, history, historyId, historyIndexes, submitChatForm }) => {
+
+const ChatInterface = ({ navigation, isLoading, setShowModal, history, historyId, historyIndexes, submitChatForm }) => {
     const scrollRef = useRef(null);
 
-    const renderMessages = (messageBlock) => {
+    const renderMessages = (messageBlock, isLoading = false) => {
+
         if (!messageBlock.assistant) {
             return (
                 <View style={styles.messageBlock}  >
@@ -23,9 +26,28 @@ const ChatInterface = ({ navigation, setShowModal, history, historyId, historyIn
                     <View style={styles.messageAlignEnd}>
                         <ChatMessage message={messageBlock.assistant.content} type={'assistant'} />
                     </View>
-                </View>)
+                </View>
+            )
         }
+
+
     }
+
+    //skeleton keyframe... temporal fix
+    const keyframe = new Keyframe({
+        0: {
+            opacity: 1,
+        },
+        45: {
+            opacity: 0.55,
+        },
+        75: {
+            opacity: 0.25
+        },
+        100: {
+            opacity: 0,
+        },
+    },).duration(1000);
 
     useEffect(() => {
 
@@ -43,6 +65,12 @@ const ChatInterface = ({ navigation, setShowModal, history, historyId, historyIn
         }
     }, [navigation])
 
+
+
+
+
+
+
     return (
         <>
             <View style={styles.chatBody}>
@@ -55,12 +83,25 @@ const ChatInterface = ({ navigation, setShowModal, history, historyId, historyIn
                     data={
                         (history && Object.keys(history).length > 0) ? history[historyId] : []
                     }
-                    renderItem={({ item }) => renderMessages(item)}
+                    renderItem={({ item }) => renderMessages(item, isLoading)}
                     scrollsToTop={true}
                     showsVerticalScrollIndicator={false}
                 >
                 </FlatList>
-            </View>
+                {
+                    // SKELETON while loading replies...  
+                    // TODO need to be moved to a Skeleton component
+                    // and create normal animation
+                    isLoading &&
+                    <View style={[styles.messageBlock,]}>
+                        <Animated.View style={{ width: '25%', height: 20, marginTop: 5, marginBottom: 5, backgroundColor: 'darkgray', borderRadius: 15 }} entering={keyframe}></Animated.View>
+                        <View style={styles.messageAlignEnd}>
+
+                            <Animated.View style={{ width: '55%', height: 55, marginTop: 5, marginBottom: 5, backgroundColor: 'darkgray', borderRadius: 15 }} entering={keyframe}></Animated.View>
+                        </ View>
+                    </View>
+                }
+            </View >
 
             <FooterInteractionContainer screenName={'Chat'} callback={submitChatForm} />
         </>

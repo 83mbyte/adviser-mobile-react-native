@@ -262,30 +262,42 @@ const HistoryContextProvider = ({ children }) => {
                 )
             }
         },
-        addChatHistoryItem: ({ historyId, value }) => {
+        addChatHistoryItem: ({ historyId, data }) => {
             // TODO
             // TODO   fix sending attachments 
             // TODO
             // TODO
             // TODO
 
-            // send data to server
-            // const dbRef = ref(db);
-            const updates = {};
 
+
+            const updates = {};
+            let dataToSaveOnServer;   // it will be data without possible attachment
+
+            if (data.user.showAttachments) {
+                // cut the attachement to store text data only (no images, files, etc.)
+
+                let { showAttachments: removed, ...restUser } = data.user;
+                dataToSaveOnServer = { assistant: data.assistant, user: restUser };
+
+            } else {
+                dataToSaveOnServer = data;
+            }
+
+            // send data to server
             if (historyState.chatHistory.history && historyState.chatHistory.history[historyId]) {
                 // if history of current chat exists
-                updates[DB_CHAT_PATH + userId + '/' + historyId] = [...historyState.chatHistory.history[historyId], value];
-                // update(dbRef, updates);
+                updates[DB_CHAT_PATH + userId + '/' + historyId] = [...historyState.chatHistory.history[historyId], dataToSaveOnServer];
+
             } else {
                 //if no history  
-                updates[DB_CHAT_PATH + userId + '/' + historyId] = [value];
-                updates[DB_USER_PATH + userId + '/chats'] = { ...historyState.chatHistory.historyIndexes, [historyId]: value.user.content }
+                updates[DB_CHAT_PATH + userId + '/' + historyId] = [dataToSaveOnServer];
+                updates[DB_USER_PATH + userId + '/chats'] = { ...historyState.chatHistory.historyIndexes, [historyId]: dataToSaveOnServer.user.content }
             }
             update(dbRef, updates)
                 .then(() => {
                     // update local state 
-                    dispatch({ type: 'ADD-CHAT-HISTORY-ITEM', payload: { historyId, value } });
+                    dispatch({ type: 'ADD-CHAT-HISTORY-ITEM', payload: { historyId, value: data } });
                 })
                 .catch((error) => console.log('error while add chat history item '));
 

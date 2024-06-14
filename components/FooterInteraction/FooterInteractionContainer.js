@@ -23,7 +23,7 @@ const FooterInteractionContainer = ({
 
     const [inputValue, setInputValue] = useState(null);
     const [showAttachment, setShowAttachment] = useState(false);
-
+    const [buttonDisabled, setButtonDisabled] = useState(false);
 
     const containerHeight = useSharedValue(0);
 
@@ -36,12 +36,17 @@ const FooterInteractionContainer = ({
         setInputValue(value);
     };
 
-    const submitHandler = () => {
-
-        let resp = callback(inputValue.trim());
-        if (resp && resp.type == 'Success') {
-            attachContextData.clearAllItems();
-            setInputValue(null);
+    const submitHandler = async () => {
+        setButtonDisabled(true);
+        try {
+            let resp = await callback(inputValue.trim());
+            if (resp && resp.type == 'Success') {
+                attachContextData.clearAllItems();
+                setInputValue(null);
+            }
+            setButtonDisabled(false);
+        } catch (error) {
+            setButtonDisabled(false);
         }
     }
 
@@ -87,17 +92,17 @@ const FooterInteractionContainer = ({
 
                         screenName === 'Chat'
                             ?
-                            <View style={{ flexDirection: 'row', columnGap: 7 }}>
+                            <View style={{ flexDirection: 'row', columnGap: 15 }}>
                                 <TouchableOpacity onPress={() => attachContextData.showAttachmentPicker(true)} style={styles.iconButton}>
                                     <Ionicons name={'attach-sharp'} size={24} color='#ff5456' />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={submitHandler} style={styles.iconButton}>
+                                <TouchableOpacity onPress={(!buttonDisabled && (inputValue && inputValue.length > 0)) ? submitHandler : null} style={styles.iconButton}>
                                     <Ionicons name={icon} size={24} color='#ff5456' />
                                 </TouchableOpacity>
                             </View>
                             :
                             <View>
-                                <TouchableOpacity onPress={submitHandler} style={styles.iconButton}>
+                                <TouchableOpacity onPress={(!buttonDisabled && (inputValue && inputValue.length > 0)) ? submitHandler : null} style={styles.iconButton}>
                                     <Ionicons name={icon} size={24} color="#8b98b4" />
                                 </TouchableOpacity>
                             </View>

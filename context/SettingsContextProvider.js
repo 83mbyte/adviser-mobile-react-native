@@ -8,7 +8,7 @@ export const useSettingsContext = () => useContext(SettingsContext);
 const initialState = {
 
     chatSettings: {
-        systemVersion: '4',
+        systemVersion: 'GPT-3.5',
         replyLength: '100 words',
         replyStyle: 'Facts only',
         replyTone: 'Casual',
