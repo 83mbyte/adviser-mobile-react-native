@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 
 import { useSettingsContext } from '../../../context/SettingsContextProvider';
@@ -17,6 +17,7 @@ import { DATA_CHAT_SETTINGS, DATA_IMAGES_SETTINGS } from '../../../lib/settingsO
 const SettingsOptions = ({ route }) => {
     let settingsDataArray = [];
     const { settingsStatePath } = route.params;
+    const [settingsUpdated, setSettingsUpdated] = useState(false);
 
     const settingsContextData = useSettingsContext();
     const settingsState = settingsContextData.data[settingsStatePath];
@@ -32,6 +33,17 @@ const SettingsOptions = ({ route }) => {
         default:
             break;
     }
+
+    useEffect(() => {
+        const onExitSaveSettingsOnServer = () => {
+            if (settingsUpdated === true) {
+                settingsContextData.updateSettingsOnServer(settingsStatePath, settingsState);
+                setSettingsUpdated(false);
+            }
+        }
+
+        return () => onExitSaveSettingsOnServer();
+    })
 
     return (
         <WhiteBottomWrapper keyId={'cardSettingsOptions'}>
@@ -81,7 +93,8 @@ const SettingsOptions = ({ route }) => {
                                                                             stateUpdateDispatcher({
                                                                                 type: option.dispatcherType,
                                                                                 value: el.value
-                                                                            })
+                                                                            });
+                                                                            setSettingsUpdated(true);
                                                                         }}
                                                                     />
                                                                 )
