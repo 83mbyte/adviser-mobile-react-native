@@ -7,6 +7,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-na
 import animationLibrary from '../../lib/animationConfig';
 import ChatAttachmentItem from '../ChatAttachment/ChatAttachmentItem';
 import { useAttachContext } from '../../context/AttachContextProvider';
+import { useSettingsContext } from '../../context/SettingsContextProvider';
 
 const layoutTransition = animationLibrary.layoutTransition.linear;
 
@@ -20,6 +21,8 @@ const FooterInteractionContainer = ({
 
     const attachContextData = useAttachContext();
     const attachmentsArray = attachContextData.data.attachmentsArray;
+
+    const settingsContextData = useSettingsContext();
 
     const [inputValue, setInputValue] = useState(null);
     const [showAttachment, setShowAttachment] = useState(false);
@@ -93,9 +96,14 @@ const FooterInteractionContainer = ({
                         screenName === 'Chat'
                             ?
                             <View style={{ flexDirection: 'row', columnGap: 15 }}>
-                                <TouchableOpacity onPress={() => attachContextData.showAttachmentPicker(true)} style={styles.iconButton}>
-                                    <Ionicons name={'attach-sharp'} size={24} color='#ff5456' />
-                                </TouchableOpacity>
+
+                                {
+                                    // add attachement is available only for gtp4
+                                    (settingsContextData.data && settingsContextData.data.chatSettings.systemVersion == 'GPT-4') &&
+                                    <TouchableOpacity onPress={() => attachContextData.showAttachmentPicker(true)} style={styles.iconButton}>
+                                        <Ionicons name={'attach-sharp'} size={24} color='#ff5456' />
+                                    </TouchableOpacity>
+                                }
                                 <TouchableOpacity onPress={(!buttonDisabled && (inputValue && inputValue.length > 0)) ? submitHandler : null} style={styles.iconButton}>
                                     <Ionicons name={icon} size={24} color='#ff5456' />
                                 </TouchableOpacity>
