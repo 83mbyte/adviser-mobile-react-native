@@ -2,21 +2,22 @@ import React, { useState, useEffect } from 'react';
 import ChatInterface from './ChatInterface';
 import WhiteBottomWrapper from '../../../components/Wrappers/WhiteBottomWrapper';
 import OpacityWrapper from '../../../components/Wrappers/OpacityWrapper';
-import { useHistoryContext } from '../../../context/HistoryContextProvider';
 
+import { useHistoryContext } from '../../../context/HistoryContextProvider';
 import { useAttachContext } from '../../../context/AttachContextProvider';
+import { useSettingsContext } from '../../../context/SettingsContextProvider';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import WarningModalContent from '../../../components/Modals/WarningModal/WarningModalContent';
-
 import ModalContainer from '../../../components/Modals/ModalContainer';
 import ImagePickerModalContent from '../../../components/Modals/ImagePicker/ImagePickerModalContent';
 import ZoomImageModalContent from '../../../components/Modals/ZoomImage/ZoomImageModalContent';
 
 import { connectFunctionsEmulator, httpsCallable, } from "firebase/functions";
-
 import { cloudFunctions } from '../../../firebaseConfig';
-import { useSettingsContext } from '../../../context/SettingsContextProvider';
 import { promptTemplatesAPI } from '../../../lib/promptsAPI';
+import { fsAPI } from '../../../lib/fsAPI';
+
+
 const ChatContainer = ({ navigation, route }) => {
     const historyContextData = useHistoryContext();
     const history = historyContextData.data.chatHistory.history;
@@ -97,44 +98,34 @@ const ChatContainer = ({ navigation, route }) => {
 
         return arrayDiscussionContext;
     }
-    const createChatItemsAndAddToHistory = ({ userContent, assistantContent, format, attachmentsArray }) => {
+
+
+
+
+
+    const createChatItemsAndAddToHistory = async ({ userContent, assistantContent, format, attachmentsArray }) => {
 
         let dialogItems = {};
         dialogItems.assistant = { content: assistantContent, format: format };
 
         if (attachmentsArray && attachmentsArray.length > 0) {
-            // to show attachments in the user message...
-            // TODO must be fixed saving the attachemnts to server or phone
-            // TODO must be fixed saving the attachemnts to server or phone
-            // TODO must be fixed saving the attachemnts to server or phone
-            // TODO must be fixed saving the attachemnts to server or phone
+
+            let attachmentsInAppStorage = await fsAPI.moveAttachmentsFromCache(attachmentsArray, historyId);
 
             dialogItems.user = {
                 content: userContent,
-                showAttachments: attachmentsArray
-                // <>
-                //     {
-                //         attachmentsArray.map((item, index) => {
-                //             return (<View style={{ flexDirection: 'column' }} key={index}>
-                //                 <TouchableOpacity onLongPress={() => setShowZoomImage({ show: true, imageSource: item })}><Image source={{ uri: item }} style={{ width: 100, height: 100, marginBottom: 5 }} /></TouchableOpacity>
-                //             </View>)
-                //         })
-
-                //     }
-                //     <Text>{userContent}</Text>
-                // </>
+                showAttachments: attachmentsInAppStorage
             }
         } else {
             dialogItems.user = { content: userContent, showAttachments: null };
         }
 
         addHistoryItem({ historyId, data: dialogItems })
-
     }
 
 
-    const submitChatForm = async (value) => {
 
+    const submitChatForm = async (value) => {
 
         let noWarnings = checkForWarnings(value);
 
@@ -147,13 +138,11 @@ const ChatContainer = ({ navigation, route }) => {
 
             // create prompts allows to create a conversation context
             if (history[historyId] && history[historyId].length > 0) {
-                //console.log('inn..', history[historyId])
                 discussionContext = [systemMessage, ...createDiscussionContext(history[historyId])];
                 discussionContext.push({ role: 'user', content: value })
             } else {
                 discussionContext = [systemMessage, { role: 'user', content: value }];
             }
-
 
             // DEV emulator settings
             try {
@@ -167,26 +156,16 @@ const ChatContainer = ({ navigation, route }) => {
 
                         if (funcRespond.data.type == 'Success') {
                             //  add to local history state and to show in UI
-                            createChatItemsAndAddToHistory({ userContent: value, assistantContent: funcRespond.data.payload[0].message.content, format: replyFormat, attachmentsArray })
+                            createChatItemsAndAddToHistory({ userContent: value, assistantContent: funcRespond.data.payload[0].message.content, format: replyFormat, attachmentsArray });
                         }
                         setIsLoading(false);
                         return { type: 'Success' }
                     })
             } catch (error) {
-                console.log('error')
-                setIsLoading(false)
+                console.log('error while trying to submitChatForm ')
+                setIsLoading(false);
             }
         }
-
-
-        // TODO  
-        // TODO  
-        // TODO  
-        // TODO     1)  add settings to request.. temperature, format and so on...  check settingsContext
-        // TODO      add settings to request.. temperature, format and so on...  check settingsContext
-        // TODO  
-
-
     }
 
 
@@ -201,7 +180,7 @@ const ChatContainer = ({ navigation, route }) => {
         <>
             <WhiteBottomWrapper keyId={'cardChat'} route={route}>
                 <OpacityWrapper keyId={'opacityChat'}>
-                    <ChatInterface navigation={navigation} isLoading={isLoading} setShowModal={setShowModal} history={history} historyId={historyId} historyIndexes={historyIndexes} submitChatForm={submitChatForm} />
+                    <ChatInterface navigation={navigation} isLoading={isLoading} setShowModal={setShowModal} history={history} historyId={historyId} historyIndexes={historyIndexes} submitChatForm={submitChatForm} setShowZoomImage={setShowZoomImage} />
                 </OpacityWrapper>
             </WhiteBottomWrapper>
 

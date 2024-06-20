@@ -5,6 +5,7 @@ import { useHistoryContext } from '../../context/HistoryContextProvider';
 
 import OpacityWrapper from '../../components/Wrappers/OpacityWrapper';
 import HistorySwipeableList from './HistorySwipeableList';
+import { fsAPI } from '../../lib/fsAPI';
 
 const HistoryContainer = ({ navigation, route }) => {
     const historyContextData = useHistoryContext();
@@ -16,8 +17,9 @@ const HistoryContainer = ({ navigation, route }) => {
         navigation.goBack();
     }
 
-    const deleteChatFromHistory = (chatId) => {
-        historyContextData.deleteChatHistoryItem(chatId)
+    const deleteChatFromHistory = async (chatId) => {
+        await fsAPI.deleteFilesFromAppStorage(chatId);
+        historyContextData.deleteChatHistoryItem(chatId);
     }
 
     return (

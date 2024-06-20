@@ -263,43 +263,26 @@ const HistoryContextProvider = ({ children }) => {
             }
         },
         addChatHistoryItem: ({ historyId, data }) => {
-            // TODO
-            // TODO   fix sending attachments 
-            // TODO
-            // TODO
-            // TODO
-
-
 
             const updates = {};
-            let dataToSaveOnServer;   // it will be data without possible attachment
 
-            if (data.user.showAttachments) {
-                // cut the attachement to store text data only (no images, files, etc.)
-
-                let { showAttachments: removed, ...restUser } = data.user;
-                dataToSaveOnServer = { assistant: data.assistant, user: restUser };
-
-            } else {
-                dataToSaveOnServer = data;
-            }
 
             // send data to server
             if (historyState.chatHistory.history && historyState.chatHistory.history[historyId]) {
                 // if history of current chat exists
-                updates[DB_CHAT_PATH + userId + '/' + historyId] = [...historyState.chatHistory.history[historyId], dataToSaveOnServer];
+                updates[DB_CHAT_PATH + userId + '/' + historyId] = [...historyState.chatHistory.history[historyId], data];
 
             } else {
                 //if no history  
-                updates[DB_CHAT_PATH + userId + '/' + historyId] = [dataToSaveOnServer];
-                updates[DB_USER_PATH + userId + '/chats'] = { ...historyState.chatHistory.historyIndexes, [historyId]: dataToSaveOnServer.user.content }
+                updates[DB_CHAT_PATH + userId + '/' + historyId] = [data];
+                updates[DB_USER_PATH + userId + '/chats'] = { ...historyState.chatHistory.historyIndexes, [historyId]: data.user.content }
             }
             update(dbRef, updates)
                 .then(() => {
                     // update local state 
                     dispatch({ type: 'ADD-CHAT-HISTORY-ITEM', payload: { historyId, value: data } });
                 })
-                .catch((error) => console.log('error while add chat history item '));
+                .catch((error) => console.log('error while add chat history item ', error));
 
 
         },

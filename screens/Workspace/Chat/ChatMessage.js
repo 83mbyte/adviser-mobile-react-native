@@ -1,7 +1,7 @@
 import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
-const ChatMessage = ({ message, type }) => {
+const ChatMessage = ({ message, type, attachments = null, setShowZoomImage }) => {
 
     if (message) {
 
@@ -9,6 +9,19 @@ const ChatMessage = ({ message, type }) => {
 
             <View style={styles.rowContainer}>
                 <View style={[styles.messageContainer, type === 'user' ? styles.userMessage : styles.assistantMessage]}>
+                    {
+                        attachments &&
+                        attachments.map((item, index) => {
+                            return (
+                                <View style={{ flexDirection: 'column' }} key={index}>
+                                    <TouchableOpacity onLongPress={() => setShowZoomImage({ show: true, imageSource: item })}>
+                                        <Image source={{ uri: item }} style={{ width: 100, height: 100, marginBottom: 5 }} onError={() => alert('no image')} />
+                                    </TouchableOpacity>
+                                </View>
+                            )
+                        })
+
+                    }
                     <View style={styles.rowContainer}>
 
                         <Text style={type == 'user' ? styles.userMessageText : styles.assistantMessageText}>
@@ -22,6 +35,9 @@ const ChatMessage = ({ message, type }) => {
     }
     return null
 }
+
+
+
 
 export default ChatMessage;
 

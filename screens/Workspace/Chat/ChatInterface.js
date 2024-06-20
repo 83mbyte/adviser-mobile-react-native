@@ -8,23 +8,24 @@ import Animated, { Keyframe } from 'react-native-reanimated';
 
 
 
-const ChatInterface = ({ navigation, isLoading, setShowModal, history, historyId, historyIndexes, submitChatForm }) => {
+const ChatInterface = ({ navigation, isLoading, setShowModal, history, historyId, historyIndexes, submitChatForm, setShowZoomImage }) => {
     const scrollRef = useRef(null);
+
 
     const renderMessages = (messageBlock, isLoading = false) => {
 
         if (!messageBlock.assistant) {
             return (
                 <View style={styles.messageBlock}  >
-                    <ChatMessage message={messageBlock.user.content} type={'user'} />
+                    <ChatMessage message={messageBlock.user.content} type={'user'} attachments={messageBlock.user.showAttachments} setShowZoomImage={setShowZoomImage} />
                 </View>
             )
         } else {
             return (
                 <View style={styles.messageBlock}  >
-                    <ChatMessage message={messageBlock.user.content} type={'user'} />
+                    <ChatMessage message={messageBlock.user.content} type={'user'} attachments={messageBlock.user.showAttachments} setShowZoomImage={setShowZoomImage} />
                     <View style={styles.messageAlignEnd}>
-                        <ChatMessage message={messageBlock.assistant.content} type={'assistant'} />
+                        <ChatMessage message={messageBlock.assistant.content} type={'assistant'} setShowZoomImage={setShowZoomImage} />
                     </View>
                 </View>
             )
