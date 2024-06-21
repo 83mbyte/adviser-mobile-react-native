@@ -6,7 +6,6 @@ import OpacityWrapper from '../../../components/Wrappers/OpacityWrapper';
 import { useHistoryContext } from '../../../context/HistoryContextProvider';
 import { useAttachContext } from '../../../context/AttachContextProvider';
 import { useSettingsContext } from '../../../context/SettingsContextProvider';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
 import WarningModalContent from '../../../components/Modals/WarningModal/WarningModalContent';
 import ModalContainer from '../../../components/Modals/ModalContainer';
 import ImagePickerModalContent from '../../../components/Modals/ImagePicker/ImagePickerModalContent';
@@ -59,13 +58,13 @@ const ChatContainer = ({ navigation, route }) => {
     const createSystemMessage = () => {
         switch (replyFormat) {
             case 'Plain text':
-                return systemMessage = promptTemplatesAPI.default({ replyTone, replyLength, replyStyle });
+                return promptTemplatesAPI.default({ replyTone, replyLength, replyStyle });
                 break;
             case 'HTML':
-                return systemMessage = promptTemplatesAPI.replyAsHTML({ replyTone, replyLength, replyStyle });
+                return promptTemplatesAPI.replyAsHTML({ replyTone, replyLength, replyStyle });
                 break;
             default:
-                return systemMessage = promptTemplatesAPI.default({ replyTone, replyLength, replyStyle });
+                return promptTemplatesAPI.default({ replyTone, replyLength, replyStyle });
                 break;
         }
     }
@@ -101,8 +100,6 @@ const ChatContainer = ({ navigation, route }) => {
 
 
 
-
-
     const createChatItemsAndAddToHistory = async ({ userContent, assistantContent, format, attachmentsArray }) => {
 
         let dialogItems = {};
@@ -111,7 +108,6 @@ const ChatContainer = ({ navigation, route }) => {
         if (attachmentsArray && attachmentsArray.length > 0) {
 
             let attachmentsInAppStorage = await fsAPI.moveAttachmentsFromCache(attachmentsArray, historyId);
-
             dialogItems.user = {
                 content: userContent,
                 showAttachments: attachmentsInAppStorage
@@ -124,33 +120,69 @@ const ChatContainer = ({ navigation, route }) => {
     }
 
 
+    const convertToBase64 = async (urlToAttachment) => {
+
+        return await fetch(urlToAttachment)
+            .then((response) => {
+                return response.blob()
+            })
+            .then(blob => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve({ status: 'Success', payload: reader.result });
+                    reader.onerror = () => reject({ status: 'Error', message: 'unable to read and convert attachment' });
+                    reader.readAsDataURL(blob);
+                })
+            })
+    }
 
     const submitChatForm = async (value) => {
 
         let noWarnings = checkForWarnings(value);
 
         if (noWarnings.type == 'Success') {
-
-            let discussionContext;
+            setIsLoading(true);
             let systemMessage;
-            setIsLoading(true)
-            systemMessage = createSystemMessage(systemMessage);
+            systemMessage = createSystemMessage();
+            let userPromtWithEncodedAttachments = null;
+            let discussionContext = null;
+
+            if (attachmentsArray && attachmentsArray.length > 0) {
+                // if at least 1 attachment exists
+                // create base64 encoded attachments
+                userPromtWithEncodedAttachments = [{
+                    type: 'text',
+                    text: value
+                },];
+
+                for (let index = 0; index < attachmentsArray.length; index++) {
+                    const element = attachmentsArray[index];
+                    let encodedResult = await convertToBase64(element);
+                    if (encodedResult.status === 'Success') {
+                        userPromtWithEncodedAttachments.push({
+                            type: 'image_url',
+                            image_url: {
+                                url: encodedResult.payload
+                            }
+                        });
+                    }
+                }
+            }
 
             // create prompts allows to create a conversation context
             if (history[historyId] && history[historyId].length > 0) {
                 discussionContext = [systemMessage, ...createDiscussionContext(history[historyId])];
-                discussionContext.push({ role: 'user', content: value })
+                discussionContext.push({ role: 'user', content: userPromtWithEncodedAttachments ? userPromtWithEncodedAttachments : value })
             } else {
-                discussionContext = [systemMessage, { role: 'user', content: value }];
+                discussionContext = [systemMessage, { role: 'user', content: userPromtWithEncodedAttachments ? userPromtWithEncodedAttachments : value }];
             }
 
-            // DEV emulator settings
             try {
+                // DEV functions emulator
                 connectFunctionsEmulator(cloudFunctions, process.env.EXPO_PUBLIC_EMULATOR_PATH, 5001);
+
                 // call "requestToAssistant" cloud function..
                 const requestToAssistant = httpsCallable(cloudFunctions, 'requestToAssistant', { limitedUseAppCheckTokens: true });
-
-                // return of the "requestToAssistant" result..
                 return await requestToAssistant({ tokens: 4000, systemVersion, messagesArray: discussionContext })
                     .then((funcRespond) => {
 
@@ -161,13 +193,15 @@ const ChatContainer = ({ navigation, route }) => {
                         setIsLoading(false);
                         return { type: 'Success' }
                     })
+
             } catch (error) {
                 console.log('error while trying to submitChatForm ')
                 setIsLoading(false);
             }
-        }
-    }
 
+        }
+
+    }
 
     useEffect(() => {
         if (!historyId) {

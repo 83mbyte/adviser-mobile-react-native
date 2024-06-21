@@ -104,13 +104,13 @@ const FooterInteractionContainer = ({
                                         <Ionicons name={'attach-sharp'} size={24} color='#ff5456' />
                                     </TouchableOpacity>
                                 }
-                                <TouchableOpacity onPress={(!buttonDisabled && (inputValue && inputValue.length > 0)) ? submitHandler : null} style={styles.iconButton}>
+                                <TouchableOpacity onPress={(!buttonDisabled) ? submitHandler : null} style={styles.iconButton}>
                                     <Ionicons name={icon} size={24} color='#ff5456' />
                                 </TouchableOpacity>
                             </View>
                             :
                             <View>
-                                <TouchableOpacity onPress={(!buttonDisabled && (inputValue && inputValue.length > 0)) ? submitHandler : null} style={styles.iconButton}>
+                                <TouchableOpacity onPress={(!buttonDisabled) ? submitHandler : null} style={styles.iconButton}>
                                     <Ionicons name={icon} size={24} color="#8b98b4" />
                                 </TouchableOpacity>
                             </View>
