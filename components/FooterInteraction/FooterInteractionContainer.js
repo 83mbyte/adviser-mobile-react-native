@@ -44,7 +44,9 @@ const FooterInteractionContainer = ({
         try {
             let resp = await callback(inputValue.trim());
             if (resp && resp.type == 'Success') {
-                attachContextData.clearAllItems();
+                if (screenName == 'Chat') {
+                    attachContextData.clearAllItems();
+                }
                 setInputValue(null);
             }
             setButtonDisabled(false);

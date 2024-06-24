@@ -25,7 +25,9 @@ const HistoryContainer = ({ navigation, route }) => {
     return (
         <WhiteBottomWrapper keyId={'history'} route={route}>
             <OpacityWrapper keyId={'opacityHistory'} >
-                <HistorySwipeableList history={history} chooseChatFromHistory={chooseChatFromHistory} deleteChatFromHistory={deleteChatFromHistory} />
+                <HistorySwipeableList history={history} chooseFromHistory={chooseChatFromHistory} deleteFromHistory={deleteChatFromHistory}
+                    subtitle={'Your Chats History'}
+                />
             </OpacityWrapper>
         </WhiteBottomWrapper>
     );

@@ -13,11 +13,11 @@ const layoutTransition = animationLibrary.layoutTransition.linear;
 const enteringTransition = animationLibrary.Stretch.entering;
 const exitingTransition = animationLibrary.Stretch.exiting;
 
-const HistorySwipeableList = ({ history, chooseChatFromHistory, deleteChatFromHistory }) => {
+const HistorySwipeableList = ({ subtitle, history, chooseFromHistory, deleteFromHistory }) => {
 
     const renderItemCachedFunc = useCallback(
         ({ item }) => {
-            return <ListItem item={item} chooseChatFromHistory={chooseChatFromHistory} deleteChatFromHistory={deleteChatFromHistory} />
+            return <ListItem item={item} chooseFromHistory={chooseFromHistory} deleteFromHistory={deleteFromHistory} />
         }, []
     )
 
@@ -30,7 +30,7 @@ const HistorySwipeableList = ({ history, chooseChatFromHistory, deleteChatFromHi
 
         <View style={styles.container}>
             <View style={styles.subTitleContainer}>
-                <SubtitleHeading value={'Your Chats History'} />
+                <SubtitleHeading value={subtitle} />
             </View>
             <Animated.FlatList
                 itemLayoutAnimation={layoutTransition}
@@ -48,7 +48,7 @@ const HistorySwipeableList = ({ history, chooseChatFromHistory, deleteChatFromHi
 export default HistorySwipeableList;
 
 
-const ListItem = ({ item, chooseChatFromHistory, deleteChatFromHistory }) => {
+const ListItem = ({ item, chooseFromHistory, deleteFromHistory }) => {
 
 
     let timeStampCache = useMemo(() => {
@@ -92,12 +92,12 @@ const ListItem = ({ item, chooseChatFromHistory, deleteChatFromHistory }) => {
                     () =>
                         <RightSwipeActionsContainer
                             animatedStyles={animatedStyles}
-                            deleteChatFromHistory={() => deleteChatFromHistory(item[0])}
+                            deleteFromHistory={() => deleteFromHistory(item[0])}
                         />
                 }
             >
                 <View style={styles.listItemContainer}>
-                    <TouchableOpacity onPress={() => chooseChatFromHistory(item[0])} >
+                    <TouchableOpacity onPress={() => chooseFromHistory(item[0])} >
                         <View style={styles.listItemRow}>
                             <View style={styles.dateTimeContainer}>
                                 <Text style={styles.historyDateText}>{timeStampCache.date}</Text>
@@ -113,11 +113,11 @@ const ListItem = ({ item, chooseChatFromHistory, deleteChatFromHistory }) => {
     )
 }
 
-const RightSwipeActionsContainer = ({ deleteChatFromHistory, animatedStyles }) => {
+const RightSwipeActionsContainer = ({ deleteFromHistory, animatedStyles }) => {
     return (
         <View style={styles.rightSwipeContainer}>
             <TouchableOpacity
-                onPress={deleteChatFromHistory}
+                onPress={deleteFromHistory}
                 style={[styles.rightSwipeButtonContainer, { backgroundColor: "#ff0000", }]}>
                 <Animated.View style={[styles.rightSwipeButton, animatedStyles]}>
                     <Ionicons name="trash-outline" size={22} color="white" />

@@ -38,6 +38,16 @@ exports.requestToAssistant = onCall(
     }
 )
 
+exports.requestToGenerateImage = onCall(
+    {},
+    async (request) => {
+        const openai = new OpenAI({
+            apiKey: SECRET_KEY_OPENAI,
+        });
+        return await gptAPI.requestToGenerateImage(openai, request.data)
+    }
+)
+
 exports.userAdded = functionsV1.auth.user().onCreate((user) => {
 
     // CREATE an user data (empty template) in database while registration request 

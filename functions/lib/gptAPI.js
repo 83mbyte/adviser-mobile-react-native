@@ -36,4 +36,23 @@ async function requestToAssistant(openai, { messagesArray, systemVersion, tokens
 
 }
 
-module.exports = { requestToAssistant };
+async function requestToGenerateImage(openai, { size = '1024x1024', prompt, style, quality }) {
+
+    try {
+        const response = await openai.images.generate({
+            model: process.env.AI_IMAGE_MODEL,
+            prompt: prompt,
+            n: 1,
+            style,
+            quality,
+            size,
+        });
+        image_url = response.data[0].url;
+        return { type: 'Success', payload: image_url }
+
+    } catch (error) {
+        return { type: 'Error', payload: null }
+    }
+}
+
+module.exports = { requestToAssistant, requestToGenerateImage };

@@ -19,10 +19,11 @@ const initialState = {
         historyIndexes: {}
 
     },
-    // imagesHistory: {
-    //     currentId: null,
-    //     history: {}
-    // }
+    imagesHistory: {
+        currentId: null,
+        history: {},
+        historyIndexes: {}
+    }
 }
 
 
@@ -219,11 +220,101 @@ const reducer = (prevState, action) => {
             }
 
 
+        // IMAGES related
+        case 'SET-IMAGES-HISTORY-ID':
+            return {
+                ...prevState,
+                ['imagesHistory']: {
+                    ...prevState['imagesHistory'],
+                    currentId: action.payload
+                }
+            }
+        case 'ADD-IMAGE-TO-HISTORY':
+            console.log('data in reducer:', action.payload)
+            if (prevState['imagesHistory']['history'][action.payload.historyId]) {
+                return {
+                    ...prevState,
+                    imagesHistory: {
+                        ...prevState.imagesHistory,
+                        history: {
+                            ...prevState.imagesHistory.history,
+                            [action.payload.historyId]: [
+                                ...prevState.imagesHistory.history[action.payload.historyId],
+                                action.payload.value
+                            ]
+                        }
+                    }
+                }
+
+            } else {
+                return {
+                    ...prevState,
+                    imagesHistory: {
+                        ...prevState.imagesHistory,
+                        history: {
+                            ...prevState.imagesHistory.history,
+                            [action.payload.historyId]: [action.payload.value]
+                        },
+                        historyIndexes: {
+                            ...prevState.imagesHistory.historyIndexes,
+                            [action.payload.historyId]: action.payload.value.title
+                        }
+                    }
+                }
+            }
+
+        case 'DELETE-IMAGE-ITEM':
+            return {
+                ...prevState,
+                imagesHistory: {
+                    ...prevState.imagesHistory,
+                    history: {
+                        ...prevState.imagesHistory.history,
+                        [action.payload.historyId]:
+                            (prevState.imagesHistory.history[action.payload.historyId]).filter(
+                                (item) => item.source !== action.payload.imageSource
+                            )
+                    }
+                },
+                // historyIndexes:{
+                //     ...prevState,
+                //     [action.payload.historyId]
+                // }
+            }
+
+        case 'DELETE-IMAGES-HISTORY-ITEM':
+            const { [action.payload]: removedImagesData, ...restImagesDataIndexes } = prevState.imagesHistory.historyIndexes;
+            if (prevState.imagesHistory.history && prevState.imagesHistory.history[action.payload]) {
+                // remove chat history + indexes from local state
+                const { [action.payload]: removedImagesDataHistory, ...restImagesDataHistory } = prevState.imagesHistory.history;
+
+                return {
+                    ...prevState,
+                    imagesHistory: {
+                        ...prevState['imagesHistory'],
+                        history: restImagesDataHistory,
+                        historyIndexes: restImagesDataIndexes
+
+                    }
+                }
+            }
+            // remove indexes from local state
+            return {
+                ...prevState,
+                ['imagesHistory']: {
+                    ...prevState['imagesHistory'],
+                    historyIndexes: restImagesDataIndexes
+                }
+            }
+
+
         default:
             return prevState
     }
 
 }
+
+
 
 const HistoryContextProvider = ({ children }) => {
 
@@ -301,6 +392,27 @@ const HistoryContextProvider = ({ children }) => {
                     console.log('error while delete chat item')
                 });
         },
+        setImagesHistoryId: (value) => {
+            if (value) {
+                dispatch(
+                    { type: 'SET-IMAGES-HISTORY-ID', payload: value }
+                )
+            } else {
+                dispatch(
+                    { type: 'SET-IMAGES-HISTORY-ID', payload: Date.now() }
+                )
+            }
+        },
+
+        addImagesHistoryItem: ({ historyId, data }) => {
+            dispatch({ type: 'ADD-IMAGE-TO-HISTORY', payload: { historyId, value: data } })
+        },
+        deleteImageItem: ({ historyId, imageSource }) => {
+            dispatch({ type: 'DELETE-IMAGE-ITEM', payload: { historyId, imageSource } })
+        },
+        deleteImagesHistoryItem: (historyId) => {
+            dispatch({ type: 'DELETE-IMAGES-HISTORY-ITEM', payload: historyId })
+        }
 
 
 

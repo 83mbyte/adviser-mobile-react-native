@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { View } from 'react-native';
-// import GetStarted from './GetStarted/GetStarted';
+
 import AuthModal from './AuthModal/AuthModal';
 import { useAuthContext } from '../context/AuthContextProvider';
 import BackButtonHeader from '../components/Buttons/BackButtonHeader';
@@ -12,6 +12,7 @@ import GenerateImagesContainer from './Workspace/GenerateImages/GenerateImagesCo
 import SettingsContainer from './Workspace/Settings/SettingsContainer';
 import SettingsOptions from './Workspace/Settings/SettingsOptions';
 import ProfileSettings from './Workspace/Settings/ProfileSettings';
+import HistoryImagesContainer from './History/HistoryImagesContainer';
 
 const COMMON_OPTIONS = {
     gestureDirection: 'vertical',
@@ -34,6 +35,11 @@ const NAVIGATION_SCREENS = [
         screenName: 'Generate Images',
         componentName: GenerateImagesContainer,
         headerTitle: 'Generate Images',
+    },
+    {
+        screenName: 'Images History',
+        componentName: HistoryImagesContainer,
+        headerTitle: 'Images History',
     },
     {
         screenName: 'Settings',
@@ -70,11 +76,7 @@ const Start = () => {
                 {
                     (!authState?.data?.user)
                         ? <RootStack.Group screenOptions={{ headerShown: false }} >
-                            {/* TODO */}
-                            {/* TODO */}
-                            {/* TODO  seems like GetStarted component close the app after signout */}
-                            {/* TODO    need to be fixed */}
-                            {/* <RootStack.Screen name="GetStarted" component={GetStarted} /> */}
+
 
                             <RootStack.Screen name="AuthModal"
                                 component={AuthModal}
@@ -96,13 +98,10 @@ const Start = () => {
                                 component={AuthModal}
 
                                 options={() => ({
-                                    // headerShown: false,
-                                    // gestureDirection: 'vertical',
-                                    // presentation: 'fullScreenModal',
-                                    // headerTransparent: true,
+
                                     ...COMMON_OPTIONS,
                                     headerTitle: '',
-                                    // headerLeft: () => <BackButtonHeader navigation={navigation} />
+
                                 })} />
                             {
 
