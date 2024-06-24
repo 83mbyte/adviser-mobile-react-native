@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -6,15 +6,15 @@ import DividerStyled from '../../../components/Divider/DividerStyled';
 import FooterInteractionContainer from '../../../components/FooterInteraction/FooterInteractionContainer';
 import animationLibrary from '../../../lib/animationConfig';
 import ImageActionButton from '../../../components/Buttons/ImageActionButton';
+import ImagesHeaderRightButtons from '../../../components/Buttons/ImagesHeaderRightButtons';
 
 
 const layoutTransition = animationLibrary.layoutTransition.linear;
 const enterTransition = animationLibrary.Stretch.entering;
 const exitTransition = animationLibrary.Stretch.exiting;
 
-const GenerateImagesInterface = ({ data, zoomButtonPress, downloadButtonPress, deleteButtonPress }) => {
+const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonPress, downloadButtonPress, deleteButtonPress, startNewButtonPress, submitImagesForm, settingsButtonPress, historyButtonPress }) => {
     const scrollRef = useRef(null);
-
 
     const renderItemCachedFunc = useCallback(
         (data) => {
@@ -23,6 +23,21 @@ const GenerateImagesInterface = ({ data, zoomButtonPress, downloadButtonPress, d
         }, [data]
     )
 
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight:
+                () => {
+                    return <ImagesHeaderRightButtons
+                        color={'#FFF'}
+                        onPressStartNew={() => startNewButtonPress(true)}
+                        isHistory={historyIndexes && Object.keys(historyIndexes).length > 0}
+                        onSettingsButtonPress={() => settingsButtonPress()}
+                        onHistoryButtonPress={() => historyButtonPress()}
+                    />
+                }
+
+        })
+    }, [navigation])
 
     return (
         <>
@@ -44,7 +59,7 @@ const GenerateImagesInterface = ({ data, zoomButtonPress, downloadButtonPress, d
                 >
                 </Animated.FlatList>
             </View >
-            <FooterInteractionContainer icon='brush' screenName='Generate Images' />
+            <FooterInteractionContainer icon='brush' screenName='Generate Images' callback={submitImagesForm} />
         </>
     );
 };
