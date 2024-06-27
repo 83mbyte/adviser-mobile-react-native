@@ -17,6 +17,7 @@ import WarningModalContent from '../../../components/Modals/WarningModal/Warning
 import { useSettingsContext } from '../../../context/SettingsContextProvider';
 import { connectFunctionsEmulator, httpsCallable } from 'firebase/functions';
 import { cloudFunctions } from '../../../firebaseConfig';
+import { fsAPI } from '../../../lib/fsAPI';
 
 const initialState = {
     showZoomImage: { showModal: false, imageSource: null },
@@ -180,17 +181,26 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                 const requestToGenerateImage = httpsCallable(cloudFunctions, 'requestToGenerateImage', { limitedUseAppCheckTokens: true });
 
                 return await requestToGenerateImage({ size, quality, style, prompt: value })
-                    .then(funcResp => {
+                    .then(async (funcResp) => {
 
-                        if (funcResp.data.type == 'Success') {
-                            addImagesHistoryItem({
-                                historyId,
-                                data: {
-                                    id: uid(),
-                                    title: value,
-                                    source: funcResp.data.payload
-                                }
-                            })
+
+                        let resp = await fsAPI.downloadImageToUserFolder(funcResp.data.payload, historyId);
+
+                        if (resp) {
+
+                            if (resp.type == 'Success') {
+
+                                addImagesHistoryItem({
+                                    historyId,
+                                    data: {
+                                        id: uid(),
+                                        title: value,
+                                        source: resp.payload
+                                    }
+                                })
+
+                                return { type: 'Success' }
+                            }
                         }
                     })
 
@@ -255,7 +265,6 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                                 title: 'AGREE',
                                 type: 'solid',
                                 callback: () => setHistoryId(),
-                                // callback: () => { setHistoryId(); attachContextData.clearAllItems(); }
                             },
                             { title: 'Cancel', type: 'outline' }
                         ]}

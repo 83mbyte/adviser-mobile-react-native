@@ -47,9 +47,9 @@ const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonP
                     showsVerticalScrollIndicator={false}
                     scrollsToTop={true}
                     ref={(it) => (scrollRef.current = it)}
-                    // onContentSizeChange={() =>
-                    //     scrollRef.current?.scrollToEnd({ animated: true })
-                    // }
+                    onContentSizeChange={() =>
+                        scrollRef.current?.scrollToEnd({ animated: true })
+                    }
                     itemLayoutAnimation={layoutTransition}
                     data={data}
                     style={styles.flatListStyle}
