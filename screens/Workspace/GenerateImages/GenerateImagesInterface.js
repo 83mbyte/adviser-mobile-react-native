@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 
@@ -74,7 +74,7 @@ export default GenerateImagesInterface;
 
 
 const ImageCard = ({ item, zoomButtonPress, downloadButtonPress, deleteButtonPress }) => {
-
+    const [noImage, setNoImage] = useState(false);
     return (
         <Animated.View
             entering={enterTransition}
@@ -82,11 +82,17 @@ const ImageCard = ({ item, zoomButtonPress, downloadButtonPress, deleteButtonPre
             style={styles.imageContainer}
             key={item.id}
         >
-            <Image
-                resizeMode={'contain'}
-                style={styles.imageStyle}
-                src={item.source}
-            />
+            {
+                (item.source && !noImage)
+                    ? <Image
+                        resizeMode={'contain'}
+                        style={styles.imageStyle}
+                        src={item.source}
+                        onError={() => setNoImage(true)}
+                    />
+                    : <View style={styles.noImage}>
+                    </View>
+            }
             <View style={styles.buttonsWrapp}>
                 <ImageActionButton icon={'download'} callback={() => downloadButtonPress(item.source)} />
                 <ImageActionButton icon={'zoom-plus'} size={28} callback={() => zoomButtonPress(item.source)} />
@@ -121,6 +127,7 @@ const styles = StyleSheet.create({
         flex: 1, zIndex: 9999,
     },
     imageStyle: { flex: 1, borderColor: 'red', borderWidth: 0, padding: 0 },
+    noImage: { backgroundColor: 'lightgray', flex: 1 },
     buttonsWrapp: {
         flexDirection: 'row', columnGap: 20, alignItems: 'center', justifyContent: 'space-around', marginTop: 5
     },
