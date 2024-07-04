@@ -3,8 +3,8 @@ import { View, StyleSheet, FlatList } from 'react-native';
 import ChatMessage from './ChatMessage';
 import ChatHeaderRightButtons from '../../../components/Buttons/ChatHeaderRightButtons';
 import FooterInteractionContainer from '../../../components/FooterInteraction/FooterInteractionContainer';
-import Animated, { Keyframe } from 'react-native-reanimated';
-
+import Animated, { LinearTransition } from 'react-native-reanimated';
+import WaitingForReplyLoader from '../../../components/Loaders/WaitingForReplyLoader';
 
 
 
@@ -34,21 +34,6 @@ const ChatInterface = ({ navigation, isLoading, setShowModal, history, historyId
 
     }
 
-    //skeleton keyframe... temporal fix
-    const keyframe = new Keyframe({
-        0: {
-            opacity: 1,
-        },
-        45: {
-            opacity: 0.55,
-        },
-        75: {
-            opacity: 0.25
-        },
-        100: {
-            opacity: 0,
-        },
-    },).duration(1000);
 
     useEffect(() => {
 
@@ -70,13 +55,13 @@ const ChatInterface = ({ navigation, isLoading, setShowModal, history, historyId
 
 
 
-
-
     return (
         <>
-            <View style={styles.chatBody}>
+
+            <Animated.View style={styles.chatBody} layout={LinearTransition}>
 
                 <FlatList
+                    contentContainerStyle={{ justifyContent: 'flex-end', flexGrow: 1 }}
                     ref={(it) => (scrollRef.current = it)}
                     onContentSizeChange={() =>
                         scrollRef.current?.scrollToEnd({ animated: true })
@@ -89,20 +74,10 @@ const ChatInterface = ({ navigation, isLoading, setShowModal, history, historyId
                     showsVerticalScrollIndicator={false}
                 >
                 </FlatList>
-                {
-                    // SKELETON while loading replies...  
-                    // TODO need to be moved to a Skeleton component
-                    // and create normal animation
-                    isLoading &&
-                    <View style={[styles.messageBlock,]}>
-                        <Animated.View style={{ width: '25%', height: 20, marginTop: 5, marginBottom: 5, backgroundColor: 'darkgray', borderRadius: 15 }} entering={keyframe}></Animated.View>
-                        <View style={styles.messageAlignEnd}>
 
-                            <Animated.View style={{ width: '55%', height: 55, marginTop: 5, marginBottom: 5, backgroundColor: 'darkgray', borderRadius: 15 }} entering={keyframe}></Animated.View>
-                        </ View>
-                    </View>
-                }
-            </View >
+                {/* Loader while waiting AI response */}
+                <WaitingForReplyLoader isLoading={isLoading} />
+            </Animated.View >
 
             <FooterInteractionContainer screenName={'Chat'} callback={submitChatForm} />
         </>
@@ -119,7 +94,7 @@ const styles = StyleSheet.create({
     },
 
     chatBody: {
-        paddingHorizontal: 20,
+        paddingHorizontal: 15,
         rowGap: 1,
         flex: 1,
     },

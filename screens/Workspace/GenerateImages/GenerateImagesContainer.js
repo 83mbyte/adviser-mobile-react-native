@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { shareAsync } from 'expo-sharing';
@@ -81,6 +81,7 @@ const GenerateImagesContainer = ({ navigation, route }) => {
     const { quality, size, style } = settingsContextData.data.imagesSettings;
 
     const [utilityState, dispatch] = useReducer(reducer, initialState);
+    const [isLoading, setIsLoading] = useState(false);
 
     const deleteButtonPress = (item) => {
         dispatch({ type: 'TOGGLE-DELETE-MODAL', payload: { showModal: true, imageToDelete: item } });
@@ -175,6 +176,7 @@ const GenerateImagesContainer = ({ navigation, route }) => {
 
         if (noWarnings.type == 'Success') {
             try {
+                setIsLoading(true);
                 // DEV emulator
                 connectFunctionsEmulator(cloudFunctions, process.env.EXPO_PUBLIC_EMULATOR_PATH, 5001)
 
@@ -183,29 +185,40 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                 return await requestToGenerateImage({ size, quality, style, prompt: value })
                     .then(async (funcResp) => {
 
+                        if (funcResp.data.type == 'Success') {
 
-                        let resp = await fsAPI.downloadImageToUserFolder(funcResp.data.payload, historyId);
+                            let resp = await fsAPI.downloadImageToUserFolder(funcResp.data.payload, historyId);
+                            if (resp) {
+                                if (resp.type == 'Success') {
 
-                        if (resp) {
-
-                            if (resp.type == 'Success') {
-
-                                addImagesHistoryItem({
-                                    historyId,
-                                    data: {
-                                        id: uid(),
-                                        title: value,
-                                        source: resp.payload
-                                    }
-                                })
-
-                                return { type: 'Success' }
+                                    addImagesHistoryItem({
+                                        historyId,
+                                        data: {
+                                            id: uid(),
+                                            title: value,
+                                            source: resp.payload
+                                        }
+                                    })
+                                    setIsLoading(false);
+                                    return { type: 'Success' }
+                                } else if (resp.type == 'Error') {
+                                    throw new Error('Unable to store an image to the application storage.. Please try again.')
+                                }
                             }
+                        }
+
+                        if (funcResp.data.type == 'Error') {
+                            throw new Error('There is something wrong. Try to modify your request please.')
                         }
                     })
 
             } catch (error) {
-                console.log('Error while trying to generate image')
+                console.log('Error while trying to generate image');
+                dispatch({ type: 'TOGGLE-WARNING-MODAL', payload: { showModal: true, message: error.message } })
+                setIsLoading(false);
+            }
+            finally {
+                setIsLoading(false)
             }
         }
     }
@@ -225,7 +238,7 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                     {/* DEV */}
                     {/* <GenerateImagesInterface navigation={navigation} data={(history && Object.keys(history).length > 0) ? history[historyId] : Object.values(history)[0]} zoomButtonPress={zoomButtonPress} downloadButtonPress={downloadButtonPress} deleteButtonPress={deleteButtonPress} /> */}
                     {/* PROD */}
-                    <GenerateImagesInterface navigation={navigation} data={history && Object.keys(history) > 0 ? history[historyId] : []} zoomButtonPress={zoomButtonPress} downloadButtonPress={downloadButtonPress} deleteButtonPress={deleteButtonPress} startNewButtonPress={startNewButtonPress} submitImagesForm={submitImagesForm} historyIndexes={historyIndexes} settingsButtonPress={settingsButtonPress} historyButtonPress={historyButtonPress} />
+                    <GenerateImagesInterface navigation={navigation} data={history && Object.keys(history) > 0 ? history[historyId] : []} zoomButtonPress={zoomButtonPress} downloadButtonPress={downloadButtonPress} deleteButtonPress={deleteButtonPress} startNewButtonPress={startNewButtonPress} submitImagesForm={submitImagesForm} historyIndexes={historyIndexes} settingsButtonPress={settingsButtonPress} historyButtonPress={historyButtonPress} isLoading={isLoading} />
 
                 </OpacityWrapper>
 

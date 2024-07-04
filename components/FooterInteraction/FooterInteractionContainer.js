@@ -91,7 +91,7 @@ const FooterInteractionContainer = ({
                 <View style={styles.dataInputContainer}>
 
                     <View style={{ flex: 1 }}>
-                        <TextInput style={styles.dataInput} placeholder={placeholder} value={inputValue} onChangeText={(value) => inputChangeHandler(value)} multiline={true} />
+                        <TextInput style={[styles.dataInput, { color: buttonDisabled ? 'lightgray' : '#505051' }]} placeholder={placeholder} value={inputValue} onChangeText={(value) => inputChangeHandler(value)} multiline={true} editable={!buttonDisabled} />
                     </View>
                     {
 
@@ -103,17 +103,17 @@ const FooterInteractionContainer = ({
                                     // add attachement is available only for gtp4
                                     (settingsContextData.data && settingsContextData.data.chatSettings.systemVersion == 'GPT-4') &&
                                     <TouchableOpacity onPress={() => attachContextData.showAttachmentPicker(true)} style={styles.iconButton}>
-                                        <Ionicons name={'attach-sharp'} size={24} color='#ff5456' />
+                                        <Ionicons name={'attach-sharp'} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
                                     </TouchableOpacity>
                                 }
                                 <TouchableOpacity onPress={(!buttonDisabled) ? submitHandler : null} style={styles.iconButton}>
-                                    <Ionicons name={icon} size={24} color='#ff5456' />
+                                    <Ionicons name={icon} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
                                 </TouchableOpacity>
                             </View>
                             :
                             <View>
                                 <TouchableOpacity onPress={(!buttonDisabled) ? submitHandler : null} style={styles.iconButton}>
-                                    <Ionicons name={icon} size={24} color="#8b98b4" />
+                                    <Ionicons name={icon} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
                                 </TouchableOpacity>
                             </View>
 

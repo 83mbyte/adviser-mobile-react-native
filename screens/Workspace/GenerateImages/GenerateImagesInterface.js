@@ -1,19 +1,21 @@
 import React, { useRef, useCallback, useEffect } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 
 import DividerStyled from '../../../components/Divider/DividerStyled';
 import FooterInteractionContainer from '../../../components/FooterInteraction/FooterInteractionContainer';
 import animationLibrary from '../../../lib/animationConfig';
 import ImageActionButton from '../../../components/Buttons/ImageActionButton';
 import ImagesHeaderRightButtons from '../../../components/Buttons/ImagesHeaderRightButtons';
+import WaitingForReplyLoader from '../../../components/Loaders/WaitingForReplyLoader';
 
 
 const layoutTransition = animationLibrary.layoutTransition.linear;
 const enterTransition = animationLibrary.Stretch.entering;
 const exitTransition = animationLibrary.Stretch.exiting;
 
-const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonPress, downloadButtonPress, deleteButtonPress, startNewButtonPress, submitImagesForm, settingsButtonPress, historyButtonPress }) => {
+
+const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonPress, downloadButtonPress, deleteButtonPress, startNewButtonPress, submitImagesForm, settingsButtonPress, historyButtonPress, isLoading }) => {
     const scrollRef = useRef(null);
 
     const renderItemCachedFunc = useCallback(
@@ -41,7 +43,7 @@ const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonP
 
     return (
         <>
-            <View style={styles.cardBody}>
+            <Animated.View style={styles.cardBody} layout={LinearTransition}>
 
                 <Animated.FlatList
                     showsVerticalScrollIndicator={false}
@@ -58,7 +60,11 @@ const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonP
                     ItemSeparatorComponent={() => <DividerStyled />}
                 >
                 </Animated.FlatList>
-            </View >
+
+                {/* Loader while waiting AI response */}
+                <WaitingForReplyLoader isLoading={isLoading} />
+
+            </Animated.View >
             <FooterInteractionContainer icon='brush' screenName='Generate Images' callback={submitImagesForm} />
         </>
     );
@@ -96,7 +102,7 @@ const ImageCard = ({ item, zoomButtonPress, downloadButtonPress, deleteButtonPre
 
 const styles = StyleSheet.create({
     cardBody: {
-        paddingHorizontal: 10,
+        paddingHorizontal: 15,
         flex: 1,
     },
     flatListStyle: { width: '100%', backgroundColor: 'transparent', height: '100%' },
