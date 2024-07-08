@@ -9,9 +9,9 @@ const enterTransition = animationLibrary.Stretch.entering;
 const exitTransition = animationLibrary.Stretch.exiting;
 
 const logoContainerSize = {
-    sm: { width: 155, height: 155 },
+    sm: { width: 125, height: 125 },
     md: { width: 210, height: 210 },
-    lg: { width: 255, height: 255 },
+    lg: { width: 225, height: 225 },
 }
 
 const logoCircleSize = {
