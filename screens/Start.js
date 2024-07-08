@@ -13,6 +13,7 @@ import SettingsContainer from './Workspace/Settings/SettingsContainer';
 import SettingsOptions from './Workspace/Settings/SettingsOptions';
 import ProfileSettings from './Workspace/Settings/ProfileSettings';
 import HistoryImagesContainer from './History/HistoryImagesContainer';
+import GetStarted from './GetStarted/GetStarted';
 
 const COMMON_OPTIONS = {
     gestureDirection: 'vertical',
@@ -72,37 +73,18 @@ const Start = () => {
     return (
         <View style={{ flex: 1 }}>
 
-            <RootStack.Navigator  >
+            <RootStack.Navigator initialRouteName='GetStarted'>
+
+                <RootStack.Screen name="GetStarted" component={GetStarted} options={{
+                    headerShown: false, gestureDirection: 'vertical'
+                }} />
                 {
                     (!authState?.data?.user)
                         ? <RootStack.Group screenOptions={{ headerShown: false }} >
-
-
-                            <RootStack.Screen name="AuthModal"
-                                component={AuthModal}
-
-                                options={() => ({
-                                    headerShown: false,
-                                    gestureDirection: 'vertical',
-                                    presentation: 'fullScreenModal',
-                                    headerTransparent: true,
-                                    headerTitle: '',
-                                    // headerLeft: () => <BackButtonHeader navigation={navigation} />
-                                })} />
-
+                            <RootStack.Screen name="AuthModal" component={AuthModal} options={{ headerShown: false, gestureDirection: 'vertical' }} />
                         </RootStack.Group>
                         : <RootStack.Group screenOptions={{ gestureEnabled: false }} >
-
                             <RootStack.Screen name="Workspace" component={Workspace} options={{ headerShown: false, gestureDirection: 'vertical' }} />
-                            <RootStack.Screen name="AuthModal"
-                                component={AuthModal}
-
-                                options={() => ({
-
-                                    ...COMMON_OPTIONS,
-                                    headerTitle: '',
-
-                                })} />
                             {
 
                                 NAVIGATION_SCREENS.map((screen, index) => {
@@ -116,7 +98,6 @@ const Start = () => {
                                         />
                                     )
                                 })
-
                             }
                         </RootStack.Group>
                 }
