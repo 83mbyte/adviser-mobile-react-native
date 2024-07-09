@@ -8,6 +8,10 @@ const { onCall } = require('firebase-functions/v2/https');
 const { OpenAI } = require("openai");
 const gptAPI = require('./lib/gptAPI');
 
+
+const { Anthropic } = require('@anthropic-ai/sdk')
+const claudeAPI = require('./lib/claudeAPI');
+
 //init app, database
 const app = initializeApp();
 const database = getDatabase(app);
@@ -16,7 +20,7 @@ const DB_USER_PATH = process.env.DB_USER_PATH;
 const DB_CHAT_PATH = process.env.DB_CHAT_PATH;
 const DB_NAME = process.env.DB_NAME;
 const SECRET_KEY_OPENAI = process.env.SECRET_KEY_OPENAI; // TODO use firebase secrets
-
+const SECRET_KEY_CLAUDEAI = process.env.SECRET_KEY_CLAUDEAI;
 
 exports.requestToAssistant = onCall(
     {
@@ -30,10 +34,19 @@ exports.requestToAssistant = onCall(
     },
     async (request) => {
 
-        const openai = new OpenAI({
-            apiKey: SECRET_KEY_OPENAI,
-        });
-        return await gptAPI.requestToAssistant(openai, request.data)
+        if (request.data.systemVersion == 'Claude') {
+            // console.log('using CLAUDE AI')
+            const anthropic = new Anthropic({
+                apiKey: SECRET_KEY_CLAUDEAI,
+            })
+            return await claudeAPI.requestToAssistantClaude(anthropic, request.data)
+        } else {
+            // console.log('using OPEN AI')
+            const openai = new OpenAI({
+                apiKey: SECRET_KEY_OPENAI,
+            });
+            return await gptAPI.requestToAssistant(openai, request.data);
+        }
 
     }
 )
