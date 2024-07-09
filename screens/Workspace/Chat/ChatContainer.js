@@ -73,8 +73,10 @@ const ChatContainer = ({ navigation, route }) => {
 
         let arrayDiscussionContext = [{ role: 'user', content: arrayDataOfCurrentHistory[0].user.content }];
 
+
         switch (systemVersion) {
             case 'GPT-4':
+                // console.log('createDiscussionContext for GPT-4')
                 if (arrayDataOfCurrentHistory.length > 0) {
                     for (let i = 0; i <= arrayDataOfCurrentHistory.length - 1; i++) {
                         arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[i].assistant.content })
@@ -82,6 +84,7 @@ const ChatContainer = ({ navigation, route }) => {
                 }
                 break;
             case 'GPT-3.5':
+                // console.log('createDiscussionContext for GPT-3.5')
                 if (arrayDataOfCurrentHistory.length >= 2) {
                     arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[arrayDataOfCurrentHistory.length - 2].assistant.content });
                     arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[arrayDataOfCurrentHistory.length - 1].assistant.content });
@@ -89,8 +92,22 @@ const ChatContainer = ({ navigation, route }) => {
                 else {
                     arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[arrayDataOfCurrentHistory.length - 1].assistant.content });
                 }
+                break;
 
+            case 'Claude':
+                // console.log('createDiscussionContext for CLAUDE')
+                if (arrayDataOfCurrentHistory.length > 1) {
+                    arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[0].assistant.content })
+                    for (let i = 1; i < arrayDataOfCurrentHistory.length; i++) {
+                        arrayDiscussionContext.push({ role: 'user', content: arrayDataOfCurrentHistory[i].user.content });
+                        arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[i].assistant.content });
+                    }
+                } else {
+                    arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[arrayDataOfCurrentHistory.length - 1].assistant.content });
+                }
+                break;
             default:
+
                 arrayDiscussionContext.push({ role: 'assistant', content: arrayDataOfCurrentHistory[arrayDataOfCurrentHistory.length - 1].assistant.content });
                 break;
         }
@@ -138,6 +155,8 @@ const ChatContainer = ({ navigation, route }) => {
 
     const submitChatForm = async (value) => {
 
+        let ai_variant = 'claudeai';
+
         let noWarnings = checkForWarnings(value);
 
         if (noWarnings.type == 'Success') {
@@ -183,13 +202,43 @@ const ChatContainer = ({ navigation, route }) => {
 
                 // call "requestToAssistant" cloud function..
                 const requestToAssistant = httpsCallable(cloudFunctions, 'requestToAssistant', { limitedUseAppCheckTokens: true });
+
                 return await requestToAssistant({ tokens: 4000, systemVersion, messagesArray: discussionContext })
                     .then((funcRespond) => {
-
+                        // console.log('================')
+                        // console.log('discussionContext', discussionContext)
+                        // console.log('================')
+                        // console.log('================')
+                        // console.log('funcRespond.data', funcRespond.data.payload[0].text);
+                        console.log('================')
                         if (funcRespond.data.type == 'Success') {
+                            // createChatItemsAndAddToHistory({ userContent: value, assistantContent: funcRespond.data.payload[0].message.content, format: replyFormat, attachmentsArray });
+
                             //  add to local history state and to show in UI
-                            createChatItemsAndAddToHistory({ userContent: value, assistantContent: funcRespond.data.payload[0].message.content, format: replyFormat, attachmentsArray });
+
+                            if (systemVersion == 'Claude') {
+                                console.log('run as CLAUDE')
+                                createChatItemsAndAddToHistory({ userContent: value, assistantContent: funcRespond.data.payload[0].text, format: replyFormat, attachmentsArray });
+                            } else {
+                                console.log('run as OPENAI')
+                                createChatItemsAndAddToHistory({ userContent: value, assistantContent: funcRespond.data.payload[0].message.content, format: replyFormat, attachmentsArray });
+                            }
+                            // switch (ai_variant) {
+                            //     case 'openai':
+                            //         createChatItemsAndAddToHistory({ userContent: value, assistantContent: funcRespond.data.payload[0].message.content, format: replyFormat, attachmentsArray });
+                            //         break;
+
+                            //     case 'claudeai':
+                            // createChatItemsAndAddToHistory({ userContent: value, assistantContent: funcRespond.data.payload[0].text, format: replyFormat, attachmentsArray });
+
+                            //         break;
+                            //     default:
+                            //         createChatItemsAndAddToHistory({ userContent: value, assistantContent: funcRespond.data.payload[0].message.content, format: replyFormat, attachmentsArray });
+                            //         break;
+                            // }
+
                         }
+
                         setIsLoading(false);
                         return { type: 'Success' }
                     })
