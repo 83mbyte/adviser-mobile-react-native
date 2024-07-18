@@ -185,11 +185,11 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                 return await requestToGenerateImage({ size, quality, style, prompt: value })
                     .then(async (funcResp) => {
 
-                        if (funcResp.data.type == 'Success') {
+                        if (funcResp.data.status == 'Success') {
 
                             let resp = await fsAPI.downloadImageToUserFolder(funcResp.data.payload, historyId);
                             if (resp) {
-                                if (resp.type == 'Success') {
+                                if (resp.status == 'Success') {
 
                                     addImagesHistoryItem({
                                         historyId,
@@ -200,14 +200,14 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                                         }
                                     })
                                     setIsLoading(false);
-                                    return { type: 'Success' }
-                                } else if (resp.type == 'Error') {
+                                    return { status: 'Success' }
+                                } else if (resp.status == 'Error') {
                                     throw new Error('Unable to store an image to the application storage.. Please try again.')
                                 }
                             }
                         }
 
-                        if (funcResp.data.type == 'Error') {
+                        if (funcResp.data.status == 'Error') {
                             throw new Error('There is something wrong. Try to modify your request please.')
                         }
                     })

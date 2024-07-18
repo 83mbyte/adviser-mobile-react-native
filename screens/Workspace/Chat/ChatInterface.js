@@ -1,109 +1,84 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
-import ChatMessage from './ChatMessage';
-import ChatHeaderRightButtons from '../../../components/Buttons/ChatHeaderRightButtons';
+import React, { useRef } from 'react';
+import Animated from 'react-native-reanimated';
+import { StyleSheet } from 'react-native';
+import { uid } from 'uid';
+
 import FooterInteractionContainer from '../../../components/FooterInteraction/FooterInteractionContainer';
-import Animated, { LinearTransition } from 'react-native-reanimated';
-import WaitingForReplyLoader from '../../../components/Loaders/WaitingForReplyLoader';
+import ChatMessage from './ChatMessage';
 
 
+const ChatInterface = ({ history, historyId, tempUserMessage, streamData, submitPrompt, setShowZoomImage }) => {
 
-const ChatInterface = ({ navigation, isLoading, setShowModal, history, historyId, historyIndexes, submitChatForm, setShowZoomImage }) => {
     const scrollRef = useRef(null);
 
-
-    const renderMessages = (messageBlock, isLoading = false) => {
-
-        if (!messageBlock.assistant) {
-            return (
-                <View style={styles.messageBlock}  >
-                    <ChatMessage message={messageBlock.user.content} type={'user'} attachments={messageBlock.user.showAttachments} setShowZoomImage={setShowZoomImage} />
-                </View>
-            )
-        } else {
-            return (
-                <View style={styles.messageBlock}  >
-                    <ChatMessage message={messageBlock.user.content} type={'user'} attachments={messageBlock.user.showAttachments} setShowZoomImage={setShowZoomImage} />
-                    <View style={styles.messageAlignEnd}>
-                        <ChatMessage message={messageBlock.assistant.content} type={'assistant'} setShowZoomImage={setShowZoomImage} />
-                    </View>
-                </View>
-            )
-        }
-
-
-    }
-
-
-    useEffect(() => {
-
-        if (historyIndexes && Object.keys(historyIndexes).length > 0) {
-            navigation.setOptions({
-                headerRight: () => (
-                    <ChatHeaderRightButtons
-                        color='white'
-                        onPressHistory={() => navigation.navigate('Chat History')}
-                        onPressNewChat={() => setShowModal(true)}
-                    />
-
-                ),
-            });
-        }
-    }, [navigation])
-
-
-
-
-
     return (
+
         <>
-
-            <Animated.View style={styles.chatBody} layout={LinearTransition}>
-
-                <FlatList
-                    contentContainerStyle={{ justifyContent: 'flex-end', flexGrow: 1 }}
+            {/* Chat body */}
+            <Animated.View style={styles.container}>
+                <Animated.ScrollView
+                    showsVerticalScrollIndicator={false}
                     ref={(it) => (scrollRef.current = it)}
                     onContentSizeChange={() =>
                         scrollRef.current?.scrollToEnd({ animated: true })
                     }
-                    data={
-                        (history && Object.keys(history).length > 0) ? history[historyId] : []
-                    }
-                    renderItem={({ item }) => renderMessages(item, isLoading)}
-                    scrollsToTop={true}
-                    showsVerticalScrollIndicator={false}
                 >
-                </FlatList>
 
-                {/* Loader while waiting AI response */}
-                <WaitingForReplyLoader isLoading={isLoading} />
-            </Animated.View >
+                    {
+                        (history && Object.keys(history).length > 0)
+                            ?
 
-            <FooterInteractionContainer screenName={'Chat'} callback={submitChatForm} />
+                            history[historyId]
+                                ? history[historyId].map((item,) => {
+
+                                    if (!item.assistant && !item.user) {
+                                        return null
+                                    }
+                                    else if (!item.assistant) {
+                                        return <ChatMessage type={'user'} message={item.user.content} key={uid()} />
+                                    } else {
+                                        return (
+                                            <Animated.View key={uid()} style={styles.messagesBlock}>
+                                                <ChatMessage type={'user'} message={item.user.content} key={uid()} attachments={item.user.showAttachments} setShowZoomImage={setShowZoomImage} />
+                                                <ChatMessage type={'assistant'} format={item.assistant.format} message={item.assistant.content} key={uid()} />
+                                            </Animated.View>
+                                        )
+                                    }
+                                })
+                                : null
+
+                            : null
+                    }
+
+
+                    {
+                        tempUserMessage &&
+                        <ChatMessage type={'user'} message={tempUserMessage.user.content} key={uid()} />
+                    }
+
+                    {
+                        (streamData && streamData != '') &&
+                        <ChatMessage type={'assistant'} message={streamData + '...'} key={'streaming_text_' + uid()} />
+                    }
+                </Animated.ScrollView>
+            </Animated.View>
+            {/* Chat body  end*/}
+
+            {/* Footer */}
+            <FooterInteractionContainer screenName={'Chat'} callback={submitPrompt} />
         </>
-    )
-}
+    );
+};
 
 export default ChatInterface;
 
-
-
 const styles = StyleSheet.create({
-
-    chatHeader: {
-    },
-
-    chatBody: {
+    container: {
         paddingHorizontal: 15,
+        paddingBottom: 2,
         rowGap: 1,
         flex: 1,
     },
 
-    messageBlock: {
-        flexDirection: 'column',
-        marginBottom: 30,
-        rowGap: 15,
-    },
-    messageAlignEnd: { margin: 0, padding: 0, alignItems: 'flex-end' }
+    messagesBlock: { marginVertical: 3 }
 })
-

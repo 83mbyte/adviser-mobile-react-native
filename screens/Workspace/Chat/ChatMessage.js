@@ -1,13 +1,13 @@
 import React from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
-const ChatMessage = ({ message, type, attachments = null, setShowZoomImage }) => {
-
+const ChatMessage = ({ message, type, attachments = null, setShowZoomImage, format }) => {
+    console.log('FORMAT in ChatMessage: ', format)
     if (message) {
 
         return (
 
-            <View style={styles.rowContainer}>
+            <View style={[styles.rowContainer, { justifyContent: type != 'user' && 'flex-end' }]} >
                 <View style={[styles.messageContainer, type === 'user' ? styles.userMessage : styles.assistantMessage]}>
                     {
                         attachments &&
@@ -42,9 +42,10 @@ const ChatMessage = ({ message, type, attachments = null, setShowZoomImage }) =>
 export default ChatMessage;
 
 const styles = StyleSheet.create({
-    rowContainer: { flexDirection: 'row' },
+    rowContainer: { flexDirection: 'row', },
 
     messageContainer: {
+        marginBottom: 10,
         minHeight: 50,
         borderWidth: 1,
         borderTopRightRadius: 15,
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
     assistantMessageText: {
         flexWrap: 'wrap',
         color: 'white',
-        textAlign: 'right'
+        textAlign: 'left'
     },
 })
 

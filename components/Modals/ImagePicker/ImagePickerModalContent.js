@@ -36,7 +36,8 @@ const ImagePickerModalContent = () => {
                     cameraType: ImagePicker.CameraType.front,
                     allowsEditing: true,
                     aspect: [4, 3],
-                    quality: 1,
+                    quality: 0.85,
+                    // quality: 1, // no compression
                     mediaTypes: ImagePicker.MediaTypeOptions.Images
                 });
             }

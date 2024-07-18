@@ -3,7 +3,8 @@
 const { getDatabase } = require('firebase-admin/database');
 const { initializeApp } = require("firebase-admin/app");
 const functionsV1 = require('firebase-functions');
-const { onCall } = require('firebase-functions/v2/https');
+const { onCall, onRequest } = require('firebase-functions/v2/https');
+
 
 const { OpenAI } = require("openai");
 const gptAPI = require('./lib/gptAPI');
@@ -96,6 +97,66 @@ exports.userDeleted = functionsV1.auth.user().onDelete((user) => {
 })
 
 
+// STREAM func
+
+
+exports.requestToAssistantStream = onRequest(
+    {
+        //DEV
+        cors: true,
+        timeoutSeconds: 120,
+    },
+    async (req, res) => {
+        let client = null;
+        const { tokens, messagesArray, systemVersion } = { ...req.body };
+
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'no-cache',
+        });
+
+        if (systemVersion == 'Claude') {
+            console.log('run as CLAUDE!')
+            client = new Anthropic({
+                apiKey: SECRET_KEY_CLAUDEAI,
+            });
+
+        } else {
+            client = new OpenAI({
+                apiKey: SECRET_KEY_OPENAI,
+            });
+
+        };
+
+
+        try {
+
+            if (client) {
+                let ai_name = systemVersion;
+                if (systemVersion.includes('GPT-')) {
+                    ai_name = 'GPT';
+                }
+                switch (ai_name) {
+                    case 'Claude':
+                        return claudeAPI.requestToAssistantClaudeStream(client, res, { tokens, messagesArray });
+
+                    case 'GPT':
+                        return await gptAPI.requestToAssistantStream(client, res, { tokens, messagesArray, systemVersion });
+                        break;
+                    default:
+                        return res.end();
+                        break;
+                }
+            } else {
+                return res.end()
+            }
+        } catch (error) {
+            console.log('error:: ', error);
+            return res.status(200).end();
+        }
+
+    })
 
 
 /**
