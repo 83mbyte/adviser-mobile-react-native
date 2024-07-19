@@ -1,3 +1,16 @@
+function chooseCorrectModel(systemVersion) {
+    switch (systemVersion) {
+        case 'GPT-4o-mini':
+            return 'gpt-4o-mini';
+            break;
+        case 'GPT-4':
+            return 'gpt-4o';
+            break;
+        default:
+            return 'gpt-3.5-turbo';
+            break;
+    }
+}
 async function requestToAssistant(openai, { messagesArray, systemVersion, tokens }) {
     // console.log('requestToAssistant');
     let model = 'gpt-3.5-turbo'; // as default value
@@ -6,17 +19,7 @@ async function requestToAssistant(openai, { messagesArray, systemVersion, tokens
     let temperature = 1; // as default value
     let n_param = 1; // as default value
 
-    switch (systemVersion) {
-        case 'GPT-3':
-            model = 'gpt-3.5-turbo';
-            break;
-        case 'GPT-4':
-            model = 'gpt-4o';
-            break;
-        default:
-            model = 'gpt-3.5-turbo';
-            break;
-    }
+    model = chooseCorrectModel(systemVersion);
 
     try {
         const completion = await openai.chat.completions.create({
@@ -68,17 +71,8 @@ async function requestToAssistantStream(openai, res, { messagesArray, systemVers
     let temperature = 1; // as default value
     let n_param = 1; // as default value
 
-    switch (systemVersion) {
-        case 'GPT-3':
-            model = 'gpt-3.5-turbo';
-            break;
-        case 'GPT-4':
-            model = 'gpt-4o';
-            break;
-        default:
-            model = 'gpt-3.5-turbo';
-            break;
-    }
+
+    model = chooseCorrectModel(systemVersion);
 
     const formatChunkWithSpecialSybmols = (data) => {
         let formattedChunk = data.replaceAll(' ', '~/~');

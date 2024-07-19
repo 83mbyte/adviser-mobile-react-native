@@ -107,8 +107,7 @@ const FooterInteractionContainer = ({
                                         <View style={{ flexDirection: 'row', columnGap: 15 }}>
 
                                             {
-                                                // add attachement is available only for gtp4
-                                                (settingsContextData.data && (settingsContextData.data.chatSettings.systemVersion == 'GPT-4' || settingsContextData.data.chatSettings.systemVersion == 'Claude')) &&
+
                                                 <TouchableOpacity onPress={() => attachContextData.showAttachmentPicker(true)} style={styles.iconButton}>
                                                     <Ionicons name={'attach-sharp'} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
                                                 </TouchableOpacity>

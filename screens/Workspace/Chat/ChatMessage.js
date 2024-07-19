@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
-const ChatMessage = ({ message, type, attachments = null, setShowZoomImage, format }) => {
-    console.log('FORMAT in ChatMessage: ', format)
+import { createJSXFromHTML } from './lib/chatUtility';
+
+const ChatMessage = ({ message, type, attachments = null, setShowZoomImage, format = null }) => {
+
+
+    const [jsxFromHTML, setJSXFromHTML] = useState([]);
+
+
+    useEffect(() => {
+        if (format && format == 'HTML') {
+            // try to  format HTML to a JSX
+            setJSXFromHTML((prevData) => [...prevData, ...createJSXFromHTML(message)]);
+        }
+
+    }, [message])
+
+
     if (message) {
 
         return (
@@ -24,10 +39,25 @@ const ChatMessage = ({ message, type, attachments = null, setShowZoomImage, form
                     }
                     <View style={styles.rowContainer}>
 
-                        <Text style={type == 'user' ? styles.userMessageText : styles.assistantMessageText}>
-                            {message}
-                        </Text>
+                        {
+                            !format || format != 'HTML'
+                                ? <Text style={type == 'user' ? styles.userMessageText : styles.assistantMessageText}>
+                                    {message}
+                                </Text>
+                                :
+                                <>
+                                    {/* if format html */}
 
+                                    <View>
+                                        {jsxFromHTML && jsxFromHTML.map((item, index) => {
+
+                                            return (
+                                                <Text key={index} style={[styles.assistantMessageText, item.style && { ...item.style }]}>{item.value && item.value}</Text>
+                                            )
+                                        })}
+                                    </View>
+                                </>
+                        }
                     </View>
                 </View>
             </View >

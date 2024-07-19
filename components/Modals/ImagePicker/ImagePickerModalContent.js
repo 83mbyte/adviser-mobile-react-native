@@ -33,7 +33,7 @@ const ImagePickerModalContent = () => {
             } else {
                 await ImagePicker.requestCameraPermissionsAsync();
                 result = await ImagePicker.launchCameraAsync({
-                    cameraType: ImagePicker.CameraType.front,
+                    cameraType: ImagePicker.CameraType.back,
                     allowsEditing: true,
                     aspect: [4, 3],
                     quality: 0.85,

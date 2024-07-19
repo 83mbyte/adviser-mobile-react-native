@@ -1,6 +1,7 @@
 import EventSource from "react-native-sse"
 import { promptTemplatesAPI } from "../../../../lib/promptsAPI"
 import { fsAPI } from "../../../../lib/fsAPI"
+import { parser } from "posthtml-parser"
 
 
 
@@ -68,6 +69,14 @@ export async function createUserPromptWithEncodedAttachments(prompt, attachments
             if (encodedResult.status === 'Success') {
                 switch (systemVersion) {
                     case 'GPT-4':
+                        userPromtWithEncodedAttachments.push({
+                            type: 'image_url',
+                            image_url: {
+                                url: encodedResult.payload
+                            }
+                        });
+                        break;
+                    case 'GPT-4o-mini':
                         userPromtWithEncodedAttachments.push({
                             type: 'image_url',
                             image_url: {
@@ -208,7 +217,7 @@ export function streamingPromise({ discussionContext: discussionContext, max_tok
 
                 es.close();
                 es.removeAllEventListeners();
-                // console.log('stream closed..')
+                console.log('stream closed..')
                 return null
             }
 
@@ -267,4 +276,77 @@ export async function createChatItemsAndAddToHistory({ userContent, assistantCon
     }
 
     addHistoryItem({ historyId, data: dialogItems })
+}
+
+
+export function createJSXFromHTML(data, setContentHTML) {
+    let parseResult = parser(data);
+    let finalResult = [];
+
+
+    const _checkInner = (item) => {
+        (item.content).forEach((elem, index) => {
+            if (typeof elem == 'string') {
+                switch (item.tag) {
+                    case 'strong':
+
+                        finalResult.push({ value: `${elem.trim()}`, style: { fontWeight: 'bold', marginBottom: 10 } })
+                        break;
+
+                    case 'li':
+                        finalResult.push({
+                            value: `- ${elem.trim()}`, style: { fontStyle: 'italic', marginBottom: 5 }
+                        })
+                        break;
+
+                    case 'p':
+                        finalResult.push({
+                            value: `    ${elem.trim()}`, style: { marginBottom: 20 }
+                        })
+                        break;
+                    case 'h1':
+                    case 'h2':
+                    case 'h3':
+                    case 'h4':
+                    case 'h5':
+                        finalResult.push({
+                            value: `${elem.trim()}`, style: { fontSize: 15, fontWeight: 'bold', marginBottom: 10 }
+                        })
+                        break
+
+                    default:
+
+                        if ((elem !== '\n') && (elem !== '\n\n')) {
+                            finalResult.push({
+                                value: elem.trim(), style: { marginBottom: 10 }
+                            })
+                        }
+                        break;
+                }
+            }
+            if (typeof elem == 'object') {
+                _checkInner(elem)
+            }
+        })
+
+    }
+
+    if (parseResult) {
+
+        parseResult.forEach((item, index) => {
+            if (typeof item == 'string') {
+
+
+                if ((item == '\n') && (item == '\n\n')) {
+                    finalResult.push({
+                        value: item.trim(), style: null
+                    })
+                }
+            }
+            if (typeof item == 'object') {
+                _checkInner(item);
+            }
+        });
+    }
+    return finalResult
 }
