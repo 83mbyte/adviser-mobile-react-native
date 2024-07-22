@@ -13,7 +13,7 @@ const ImagesHeaderRightButtons = ({ color, onPressStartNew, isHistory, onSetting
 
             <Animated.View
                 key={'chatHeaderRightButtons'}
-                style={{ backgroundColor: 'transparent', flexDirection: 'row', columnGap: 12, }}
+                style={{ backgroundColor: 'transparent', flexDirection: 'row', columnGap: 12, marginLeft: 12 }}
                 entering={entering.delay(500)}
             >
                 <TouchableOpacity onPress={onPressStartNew}>

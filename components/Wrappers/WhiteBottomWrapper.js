@@ -8,9 +8,9 @@ const WhiteBottomWrapper = ({ keyId, route, children }) => {
     return (
 
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} >
-            <View style={[styles.container, { paddingTop: ins.top * 2 }]}>
+            <View style={[styles.container, { paddingTop: Platform.OS === 'ios' ? ins.top * 2 : ins.top * 3 }]}>
 
-                <View style={styles.whiteContainer}>
+                <View style={[styles.whiteContainer]}>
                     {children}
                 </View>
 
@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 0,
         flexDirection: 'column',
         justifyContent: 'space-between',
-        paddingVertical: 25,
+        paddingTop: 25,
+        // paddingVertical: 25,
     },
 })

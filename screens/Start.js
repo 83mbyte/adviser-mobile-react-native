@@ -93,7 +93,11 @@ const Start = () => {
                                             options={({ navigation, route }) => ({
                                                 ...COMMON_OPTIONS,
                                                 headerTitle: screen.headerTitle,
-                                                headerLeft: () => <BackButtonHeader navigation={navigation} color={'white'} route={route} />,
+                                                headerTitleAlign: 'center',
+                                                headerTitleStyle: { fontSize: 17 },
+                                                headerLeft: () => {
+                                                    return <BackButtonHeader navigation={navigation} color={'white'} route={route} />
+                                                },
                                             })}
                                         />
                                     )

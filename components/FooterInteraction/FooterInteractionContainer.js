@@ -9,6 +9,7 @@ import ChatAttachmentItem from '../ChatAttachment/ChatAttachmentItem';
 import { useAttachContext } from '../../context/AttachContextProvider';
 import { useSettingsContext } from '../../context/SettingsContextProvider';
 import Loader from '../Loaders/Loader';
+import BottomSafeViewPadding from '../Wrappers/BottomSafeViewPadding';
 
 const layoutTransition = animationLibrary.layoutTransition.linear;
 
@@ -71,67 +72,70 @@ const FooterInteractionContainer = ({
     }, [])
 
     return (
-        <View style={styles.footerContainer}>
-            <View style={styles.redLine}></View>
-            <View style={styles.grayContainer}>
-                {
-                    (screenName === 'Chat' && showAttachment) &&
-                    <Animated.FlatList
-                        style={animatedStyles}
-                        data={attachmentsArray}
-                        showsHorizontalScrollIndicator={false}
-                        itemLayoutAnimation={layoutTransition}
-                        keyExtractor={item => item.slice(-10, -4)}
-                        horizontal={true}
-                        renderItem={({ item }) => <ChatAttachmentItem key={item.slice(-10, -4)} attachment={item} clearItemCallback={() => attachContextData.deleteAttachment(item)} />}
-                    >
+        <BottomSafeViewPadding>
 
-                    </Animated.FlatList>
-
-                }
-                <View style={styles.dataInputContainer}>
-
-
+            <View style={styles.footerContainer}>
+                <View style={styles.redLine}></View>
+                <View style={styles.grayContainer}>
                     {
-                        buttonDisabled
-                            ? <Loader size={12} />
+                        (screenName === 'Chat' && showAttachment) &&
+                        <Animated.FlatList
+                            style={animatedStyles}
+                            data={attachmentsArray}
+                            showsHorizontalScrollIndicator={false}
+                            itemLayoutAnimation={layoutTransition}
+                            keyExtractor={item => item.slice(-10, -4)}
+                            horizontal={true}
+                            renderItem={({ item }) => <ChatAttachmentItem key={item.slice(-10, -4)} attachment={item} clearItemCallback={() => attachContextData.deleteAttachment(item)} />}
+                        >
 
-                            : <>
-                                <View style={{ flex: 1 }}>
-                                    <TextInput style={[styles.dataInput, { color: buttonDisabled ? 'lightgray' : '#505051' }]} placeholder={placeholder} value={inputValue} onChangeText={(value) => inputChangeHandler(value)} multiline={true} editable={!buttonDisabled} />
-                                </View>
-                                {
+                        </Animated.FlatList>
 
-                                    screenName === 'Chat'
-                                        ?
-                                        <View style={{ flexDirection: 'row', columnGap: 15 }}>
-
-                                            {
-
-                                                <TouchableOpacity onPress={() => attachContextData.showAttachmentPicker(true)} style={styles.iconButton}>
-                                                    <Ionicons name={'attach-sharp'} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
-                                                </TouchableOpacity>
-                                            }
-                                            <TouchableOpacity onPress={(!buttonDisabled) ? submitHandler : null} style={styles.iconButton}>
-                                                <Ionicons name={icon} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
-                                            </TouchableOpacity>
-                                        </View>
-                                        :
-                                        <View>
-                                            <TouchableOpacity onPress={(!buttonDisabled) ? submitHandler : null} style={styles.iconButton}>
-                                                <Ionicons name={icon} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
-                                            </TouchableOpacity>
-                                        </View>
-
-                                }
-                            </>
                     }
+                    <View style={styles.dataInputContainer}>
 
 
+                        {
+                            buttonDisabled
+                                ? <Loader size={12} />
+
+                                : <>
+                                    <View style={{ flex: 1 }}>
+                                        <TextInput style={[styles.dataInput, { color: buttonDisabled ? 'lightgray' : '#505051' }]} placeholder={placeholder} value={inputValue} onChangeText={(value) => inputChangeHandler(value)} multiline={true} editable={!buttonDisabled} />
+                                    </View>
+                                    {
+
+                                        screenName === 'Chat'
+                                            ?
+                                            <View style={{ flexDirection: 'row', columnGap: 15 }}>
+
+                                                {
+
+                                                    <TouchableOpacity onPress={() => attachContextData.showAttachmentPicker(true)} style={styles.iconButton}>
+                                                        <Ionicons name={'attach-sharp'} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
+                                                    </TouchableOpacity>
+                                                }
+                                                <TouchableOpacity onPress={(!buttonDisabled) ? submitHandler : null} style={styles.iconButton}>
+                                                    <Ionicons name={icon} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
+                                                </TouchableOpacity>
+                                            </View>
+                                            :
+                                            <View>
+                                                <TouchableOpacity onPress={(!buttonDisabled) ? submitHandler : null} style={styles.iconButton}>
+                                                    <Ionicons name={icon} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
+                                                </TouchableOpacity>
+                                            </View>
+
+                                    }
+                                </>
+                        }
+
+
+                    </View>
                 </View>
-            </View>
 
-        </View >
+            </View >
+        </BottomSafeViewPadding>
     );
 };
 
@@ -165,7 +169,8 @@ const styles = StyleSheet.create({
         // minHeight: 50,
         borderWidth: 0,
         borderColor: 'green',
-        alignItems: 'flex-end',
+        alignItems: 'center',
+        // alignItems: 'flex-end',
         justifyContent: 'center',
         flexDirection: 'row',
         columnGap: 0,

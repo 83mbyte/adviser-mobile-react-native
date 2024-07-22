@@ -29,7 +29,8 @@ const styles = StyleSheet.create({
             height: 57,
             borderWidth: 0,
             margin: 2,
-            borderRadius: '35%',
+            borderRadius: 35,
+            // borderRadius: '35%',
             alignItems: 'center',
             justifyContent: 'center'
         },
