@@ -98,18 +98,14 @@ const GenerateImagesContainer = ({ navigation, route }) => {
         historyContextData.deleteImageItem({ historyId, imageSource: utilityState.showDeleteModal.imageToDelete });
     }
 
-    const downloadButtonPress = async (downloadURL) => {
+    const downloadButtonPress = async (downloadURL, mime) => {
         // A filename extension as .PNG extension, because the images to download will be as .PNG files..
         const filename = `${Date.now().toString().substring(6)}.png`;
 
-        const result = await FileSystem.downloadAsync(downloadURL, FileSystem.documentDirectory + filename)
-            .catch(error => {
-                console.error(error);
-            });
-        if (result && result.status === 200) {
-            saveImageToDevice(result.uri, filename, result.headers["Content-Type"])
-        } else {
-            console.log('something went wrong..')
+        try {
+            saveImageToDevice(downloadURL, filename, mime)
+        } catch (error) {
+            console.log('error in try to saveImageToDevice  ', error)
         }
 
     };
@@ -196,7 +192,8 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                                         data: {
                                             id: uid(),
                                             title: value,
-                                            source: resp.payload
+                                            source: resp.payload,
+                                            mime: resp.mime
                                         }
                                     })
                                     setIsLoading(false);

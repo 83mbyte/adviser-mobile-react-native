@@ -21,7 +21,7 @@ const initialState = {
         replyCount: false
     },
     imagesSettings: {
-        size: 'A',
+        size: '1024x1024',
         style: 'vivid',
         quality: 'standard'
     }

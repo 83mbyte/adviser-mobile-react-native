@@ -94,7 +94,7 @@ const ImageCard = ({ item, zoomButtonPress, downloadButtonPress, deleteButtonPre
                     </View>
             }
             <View style={styles.buttonsWrapp}>
-                <ImageActionButton icon={'download'} callback={() => downloadButtonPress(item.source)} />
+                <ImageActionButton icon={'download'} callback={() => downloadButtonPress(item.source, item.mime)} />
                 <ImageActionButton icon={'zoom-plus'} size={28} callback={() => zoomButtonPress(item.source)} />
                 <ImageActionButton icon={'trash'} callback={() => deleteButtonPress(item.source)} />
             </View>
@@ -121,7 +121,8 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         borderWidth: 1,
         borderColor: 'lightgray',
-        borderRadius: '35%',
+        // borderRadius: '35%',
+        borderRadius: 35,
         minHeight: 300,
         flexDirection: 'column',
         flex: 1, zIndex: 9999,
