@@ -11,16 +11,16 @@ import GenerateImagesInterface from './GenerateImagesInterface';
 
 import { useHistoryContext } from '../../../context/HistoryContextProvider';
 import ModalContainer from '../../../components/Modals/ModalContainer';
-import ZoomImageModalContent from '../../../components/Modals/ZoomImage/ZoomImageModalContent';
 import WarningModalContent from '../../../components/Modals/WarningModal/WarningModalContent';
 
 import { useSettingsContext } from '../../../context/SettingsContextProvider';
 import { connectFunctionsEmulator, httpsCallable } from 'firebase/functions';
 import { cloudFunctions } from '../../../firebaseConfig';
 import { fsAPI } from '../../../lib/fsAPI';
+import ZoomImageModalContainer from '../../../components/Modals/ZoomImage/ZoomImageModalContainer';
 
 const initialState = {
-    showZoomImage: { showModal: false, imageSource: null },
+    showZoomImage: { showModal: false, imageSource: null, imageSize: null },
     showDeleteModal: { showoModal: false, imageToDelete: null },
     showStartNewModal: { showModal: false },
     showWarningModal: { showModal: false, message: null }
@@ -34,7 +34,7 @@ const reducer = (prevState, action) => {
             }
             return {
                 ...prevState,
-                showZoomImage: { showModal: false, imageSource: null }
+                showZoomImage: { showModal: false, imageSource: null, imageSize: null }
             }
 
         case 'TOGGLE-DELETE-MODAL':
@@ -87,10 +87,10 @@ const GenerateImagesContainer = ({ navigation, route }) => {
         dispatch({ type: 'TOGGLE-DELETE-MODAL', payload: { showModal: true, imageToDelete: item } });
     }
 
-    const zoomButtonPress = (imageSource) => {
+    const zoomButtonPress = (imageSource, imageSize) => {
         dispatch({
             type: 'TOGGLE-ZOOM-IMAGE',
-            payload: { showModal: true, imageSource: imageSource }
+            payload: { showModal: true, imageSource: imageSource, imageSize: imageSize }
         });
     };
 
@@ -193,7 +193,8 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                                             id: uid(),
                                             title: value,
                                             source: resp.payload,
-                                            mime: resp.mime
+                                            mime: resp.mime,
+                                            size: size
                                         }
                                     })
                                     setIsLoading(false);
@@ -243,9 +244,8 @@ const GenerateImagesContainer = ({ navigation, route }) => {
             </WhiteBottomWrapper>
             {
                 utilityState.showZoomImage.showModal &&
-                <ModalContainer modalVisible={utilityState.showZoomImage.showModal} callbackCancel={() => dispatch({ type: 'TOGGLE-ZOOM-IMAGE' })} customHeight={'50%'}>
-                    <ZoomImageModalContent imageSource={utilityState.showZoomImage.imageSource} />
-                </ModalContainer>
+                <ZoomImageModalContainer modalVisible={utilityState.showZoomImage.showModal} callbackCancel={() => dispatch({ type: 'TOGGLE-ZOOM-IMAGE' })} imageSize={utilityState.showZoomImage.imageSize} imageSource={utilityState.showZoomImage.imageSource}>
+                </ZoomImageModalContainer>
 
             }
 

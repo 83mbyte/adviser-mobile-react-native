@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import { View, StyleSheet, Image, Text } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 
 import DividerStyled from '../../../components/Divider/DividerStyled';
@@ -7,7 +7,6 @@ import FooterInteractionContainer from '../../../components/FooterInteraction/Fo
 import animationLibrary from '../../../lib/animationConfig';
 import ImageActionButton from '../../../components/Buttons/ImageActionButton';
 import ImagesHeaderRightButtons from '../../../components/Buttons/ImagesHeaderRightButtons';
-import WaitingForReplyLoader from '../../../components/Loaders/WaitingForReplyLoader';
 
 
 const layoutTransition = animationLibrary.layoutTransition.linear;
@@ -61,9 +60,6 @@ const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonP
                 >
                 </Animated.FlatList>
 
-                {/* Loader while waiting AI response */}
-                <WaitingForReplyLoader isLoading={isLoading} />
-
             </Animated.View >
             <FooterInteractionContainer icon='brush' screenName='Generate Images' callback={submitImagesForm} />
         </>
@@ -79,30 +75,33 @@ const ImageCard = ({ item, zoomButtonPress, downloadButtonPress, deleteButtonPre
         <Animated.View
             entering={enterTransition}
             exiting={exitTransition}
-            style={styles.imageContainer}
+            style={styles.imageResultContainer}
             key={item.id}
         >
-            {
-                (item.source && !noImage)
-                    ? <Image
-                        resizeMode={'contain'}
-                        style={styles.imageStyle}
-                        src={item.source}
-                        onError={() => setNoImage(true)}
-                    />
-                    : <View style={styles.noImage}>
-                    </View>
-            }
-            <View style={styles.buttonsWrapp}>
-                <ImageActionButton icon={'download'} callback={() => downloadButtonPress(item.source, item.mime)} />
-                <ImageActionButton icon={'zoom-plus'} size={28} callback={() => zoomButtonPress(item.source)} />
-                <ImageActionButton icon={'trash'} callback={() => deleteButtonPress(item.source)} />
+
+            <Text style={styles.imageTitle}>"{item.title.slice(0, 55)} ..."</Text>
+            <View style={styles.imageView}>
+                {
+                    (item.source && !noImage)
+                        ? <Image
+                            resizeMode={'contain'}
+                            style={styles.imageStyle}
+                            src={item.source}
+                            onError={() => setNoImage(true)}
+                        />
+                        : <View style={styles.noImage}>
+                        </View>
+                }
             </View>
 
+            <View style={styles.buttonsWrapp}>
+                <ImageActionButton icon={'download'} callback={() => downloadButtonPress(item.source, item.mime)} />
+                <ImageActionButton icon={'zoom-plus'} callback={() => zoomButtonPress(item.source, item.size)} />
+                <ImageActionButton icon={'trash'} callback={() => deleteButtonPress(item.source)} />
+            </View>
         </Animated.View>
     )
 }
-
 
 
 
@@ -113,19 +112,26 @@ const styles = StyleSheet.create({
     },
     flatListStyle: { width: '100%', backgroundColor: 'transparent', height: '100%' },
 
-    imageContainer: {
+    imageResultContainer: {
         paddingHorizontal: 10,
         paddingTop: 25,
         paddingBottom: 10,
         backgroundColor: 'white',
-        marginVertical: 10,
+        marginVertical: 20,
         borderWidth: 1,
-        borderColor: 'lightgray',
-        // borderRadius: '35%',
-        borderRadius: 35,
+        borderBottomWidth: 0,
+        borderTopWidth: 0,
         minHeight: 300,
+        borderColor: 'lightgray',
+        borderRadius: 35,
         flexDirection: 'column',
-        flex: 1, zIndex: 9999,
+        zIndex: 9999,
+    },
+    imageTitle: { backgroundColor: 'transparent', textAlign: 'center', paddingTop: 2, paddingBottom: 15, paddingHorizontal: 3, color: 'gray', fontStyle: 'italic' },
+
+    imageView: {
+        minHeight: 240,
+        // flex: 1
     },
     imageStyle: { flex: 1, borderColor: 'red', borderWidth: 0, padding: 0 },
     noImage: { backgroundColor: 'lightgray', flex: 1 },
