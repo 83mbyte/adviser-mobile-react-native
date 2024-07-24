@@ -42,7 +42,7 @@ async function requestToAssistantClaudeStream(client, res, { tokens, messagesArr
             model: MODEL_AI,
         })
         .on('error', (e) => {
-            writeOperation({ event: 'error', data: `Something goes wrong..try to modify your prompt. Error = ${e}.` });
+            writeOperation({ event: 'error', data: e.message });
         })
         .on('text', (text) => {
             // console.log('chunking..');

@@ -234,7 +234,14 @@ export function streamingPromise({ discussionContext: discussionContext, max_tok
             es.addEventListener('error', (event) => {
                 // console.log('Stream got error..', event);
                 closeStreamOperations();
-                reject({ status: 'Error', name: '', message: 'error while streeaming..' });
+                let errMess = event.data.slice(4,);
+                let errMessParsed = JSON.parse(errMess);
+                let errorMessageToShow = errMessParsed.error.message;
+
+                if ((errMessParsed.error.message).includes('image exceeds 5 MB maximum')) {
+                    errorMessageToShow = 'image file exceeds 5 MB maximum.';
+                }
+                reject({ status: 'Error', name: '', message: 'Error while streeaming.. ' + errorMessageToShow });
             });
 
 
@@ -279,18 +286,18 @@ export async function createChatItemsAndAddToHistory({ userContent, assistantCon
 }
 
 
-export function createJSXFromHTML(data, setContentHTML) {
+export function createJSXFromHTML(data) {
     let parseResult = parser(data);
     let finalResult = [];
 
 
-    const _checkInner = (item) => {
+    const checkInner = (item) => {
         (item.content).forEach((elem, index) => {
             if (typeof elem == 'string') {
                 switch (item.tag) {
                     case 'strong':
 
-                        finalResult.push({ value: `${elem.trim()}`, style: { fontWeight: 'bold', marginBottom: 10 } })
+                        finalResult.push({ value: `${elem.trim()}`, style: { fontWeight: 'bold' } })
                         break;
 
                     case 'li':
@@ -301,7 +308,7 @@ export function createJSXFromHTML(data, setContentHTML) {
 
                     case 'p':
                         finalResult.push({
-                            value: `    ${elem.trim()}`, style: { marginBottom: 20 }
+                            value: `    ${elem.trim()}`, style: { marginBottom: 10 }
                         })
                         break;
                     case 'h1':
@@ -325,7 +332,7 @@ export function createJSXFromHTML(data, setContentHTML) {
                 }
             }
             if (typeof elem == 'object') {
-                _checkInner(elem)
+                checkInner(elem)
             }
         })
 
@@ -337,14 +344,14 @@ export function createJSXFromHTML(data, setContentHTML) {
             if (typeof item == 'string') {
 
 
-                if ((item == '\n') && (item == '\n\n')) {
+                if ((item !== '\n') && (item !== '\n\n')) {
                     finalResult.push({
                         value: item.trim(), style: null
                     })
                 }
             }
             if (typeof item == 'object') {
-                _checkInner(item);
+                checkInner(item);
             }
         });
     }

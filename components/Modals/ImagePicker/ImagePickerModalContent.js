@@ -1,5 +1,6 @@
 import React from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { View, StyleSheet, TouchableOpacity, Text, } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -36,15 +37,29 @@ const ImagePickerModalContent = () => {
                     cameraType: ImagePicker.CameraType.back,
                     allowsEditing: true,
                     aspect: [4, 3],
-                    quality: 0.85,
-                    // quality: 1, // no compression
+                    // quality: 0.85,
+                    quality: 1, // no compression
                     mediaTypes: ImagePicker.MediaTypeOptions.Images
                 });
             }
 
             if (!result.canceled) {
                 //save image
-                await saveImage(result.assets[0].uri);
+
+                if (result.assets[0].fileSize > 0 && result.assets[0].fileSize < 3670016) {
+
+                    await pushImageToAttachments(result.assets[0].uri);
+                } else {
+                    const manipResult = await manipulateAsync(
+                        result.assets[0].uri,
+                        [{ resize: { height: 1512, width: 1512 } }],
+                        { compress: 1, format: SaveFormat.WEBP }
+                    );
+                    if (manipResult && manipResult.uri) {
+
+                        await pushImageToAttachments(manipResult.uri);
+                    }
+                }
             }
 
         } catch (error) {
@@ -54,7 +69,7 @@ const ImagePickerModalContent = () => {
 
     }
 
-    const saveImage = async (image) => {
+    const pushImageToAttachments = async (image) => {
         try {
 
             if (attachmentsArray.length < 3) {
@@ -64,6 +79,7 @@ const ImagePickerModalContent = () => {
             modalContext.closeModal();
 
         } catch (error) {
+            throw new Error('Unable to save an image to the application storage.. Please try again.')
         }
     }
 
@@ -108,9 +124,4 @@ const styles = StyleSheet.create({
         // width: 50
     },
 
-    // footer: {
-    //     alignItems: 'center',
-    //     justifyContent: 'space-around',
-    //     flexDirection: 'row'
-    // }
 })

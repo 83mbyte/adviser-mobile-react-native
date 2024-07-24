@@ -9,8 +9,8 @@ import ModalContainer from '../../../components/Modals/ModalContainer';
 import WarningModalContent from '../../../components/Modals/WarningModal/WarningModalContent';
 import { useHistoryContext } from '../../../context/HistoryContextProvider';
 import ChatHeaderRightButtons from '../../../components/Buttons/ChatHeaderRightButtons';
+import ZoomImageModalContainer from '../../../components/Modals/ZoomImage/ZoomImageModalContainer';
 import ImagePickerModalContent from '../../../components/Modals/ImagePicker/ImagePickerModalContent';
-import ZoomImageModalContent from '../../../components/Modals/ZoomImage/ZoomImageModalContent';
 import ChatInterface from './ChatInterface';
 
 
@@ -107,6 +107,7 @@ const ChatContainer = ({ navigation, route }) => {
 
         } catch (error) {
             setShowWarningModal({ show: true, message: error.message });
+            setTempUserMessage(null);
         }
     }
 
@@ -190,10 +191,9 @@ const ChatContainer = ({ navigation, route }) => {
             {
                 // modal zooom image
                 showZoomImage.show &&
-                <ModalContainer modalVisible={showZoomImage.show} callbackCancel={() => setShowZoomImage(false)} customHeight={'50%'}>
-                    <ZoomImageModalContent imageSource={showZoomImage.imageSource} />
 
-                </ModalContainer>
+                <ZoomImageModalContainer modalVisible={showZoomImage.show} callbackCancel={() => setShowZoomImage(false)} imageSize={'1024x1024'} imageSource={showZoomImage.imageSource}>
+                </ZoomImageModalContainer>
             }
         </>
     )
