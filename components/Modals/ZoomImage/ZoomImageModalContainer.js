@@ -1,7 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Modal, View, StyleSheet, useWindowDimensions, } from 'react-native';
 import Animated from 'react-native-reanimated';
-
 
 
 import CloseButton from '../../Buttons/CloseButton';
@@ -11,12 +10,8 @@ import ZoomImageModalContent from './ZoomImageModalContent';
 const enterTransition = animationLibrary.Stretch.entering;
 const exitTransition = animationLibrary.Stretch.exiting;
 
-const ModalContext = createContext();
-export const useModalContext = () => useContext(ModalContext);
-
 
 const ZoomImageModalContainer = ({ modalVisible, callbackCancel, imageSize, imageSource }) => {
-
     let screenWidth = useWindowDimensions().width;
 
     const [showContent, setShowContent] = useState(true);
@@ -88,9 +83,8 @@ const ZoomImageModalContainer = ({ modalVisible, callbackCancel, imageSize, imag
             imageDimension = null;
         }
     }, [])
-
     return (
-        <ModalContext.Provider value={{ closeModal: () => closeModalAnimated() }}>
+        <>
             {
                 imageDetails &&
                 <Modal
@@ -124,7 +118,7 @@ const ZoomImageModalContainer = ({ modalVisible, callbackCancel, imageSize, imag
                 </Modal>
 
             }
-        </ModalContext.Provider >
+        </>
     )
 }
 
