@@ -59,6 +59,44 @@ async function requestToGenerateImage(openai, { size = '1024x1024', prompt, styl
 }
 
 
+async function requestToTranscribe(openai_key, res, { buff, filename, type, lastModified }) {
+
+    let fileToTranscribe = new File([buff], filename, { type, lastModified });
+
+    if (fileToTranscribe) {
+        const formData = new FormData();
+        formData.append('model', 'whisper-1');
+        formData.append('file', fileToTranscribe);
+
+        return await fetch('https://api.openai.com/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+                "Authorization": `Bearer ${openai_key}`,
+            },
+            body: formData
+        })
+            .then((resp) => {
+                fileToTranscribe = null;
+                return resp.json();
+            })
+            .then(respFinal => {
+                console.log('respFinal', respFinal);
+
+                if (respFinal?.text) {
+                    return res.send({ status: 'Success', payload: respFinal.text })
+                } else {
+                    return res.send({ status: 'Error', message: 'Unable to convert audio to text.' })
+                }
+            })
+            .catch((error) => {
+                fileToTranscribe = null;
+                // console.log({ error: 'Internal Server Error. (Error while transcribe operation)' })
+                return res.send({ status: 'Error', message: error.message ? error.message : 'Error while transcribe operation.' })
+            })
+    }
+
+}
+
 // STREAMing. 
 async function requestToAssistantStream(openai, res, { messagesArray, systemVersion, tokens }) {
     function writeOperation({ event, data }) {
@@ -104,4 +142,6 @@ async function requestToAssistantStream(openai, res, { messagesArray, systemVers
     res.end()
 }
 
-module.exports = { requestToAssistant, requestToGenerateImage, requestToAssistantStream };
+
+
+module.exports = { requestToAssistant, requestToGenerateImage, requestToAssistantStream, requestToTranscribe };

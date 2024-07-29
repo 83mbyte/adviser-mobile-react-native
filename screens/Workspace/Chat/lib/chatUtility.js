@@ -297,18 +297,18 @@ export function createJSXFromHTML(data) {
                 switch (item.tag) {
                     case 'strong':
 
-                        finalResult.push({ value: `${elem.trim()}`, style: { fontWeight: 'bold' } })
+                        finalResult.push({ value: `${elem.trim()}`, style: { fontWeight: 'bold', margin: 0 } })
                         break;
 
                     case 'li':
                         finalResult.push({
-                            value: `- ${elem.trim()}`, style: { fontStyle: 'italic', marginBottom: 5 }
+                            value: `- ${elem.trim()}`, style: { fontStyle: 'italic', margin: 0 }
                         })
                         break;
 
                     case 'p':
                         finalResult.push({
-                            value: `    ${elem.trim()}`, style: { marginBottom: 10 }
+                            value: `${elem.trim()}`, style: { marginBottom: 5 }
                         })
                         break;
                     case 'h1':
@@ -325,7 +325,12 @@ export function createJSXFromHTML(data) {
 
                         if ((elem !== '\n') && (elem !== '\n\n')) {
                             finalResult.push({
-                                value: elem.trim(), style: { marginBottom: 10 }
+                                value: elem.trim(), style: { marginBottom: 0 }
+                            })
+                        }
+                        if ((elem == '\n')) {
+                            finalResult.push({
+                                value: elem.trim(), style: { marginBottom: 0 }
                             })
                         }
                         break;

@@ -1,18 +1,18 @@
 import React, { useEffect, useState, } from 'react';
+import { useAttachContext } from '../../../context/AttachContextProvider';
+import { useSettingsContext } from '../../../context/SettingsContextProvider';
+import { useHistoryContext } from '../../../context/HistoryContextProvider';
 
 import WhiteBottomWrapper from '../../../components/Wrappers/WhiteBottomWrapper';
 import OpacityWrapper from '../../../components/Wrappers/OpacityWrapper';
 
-import { useAttachContext } from '../../../context/AttachContextProvider';
-import { useSettingsContext } from '../../../context/SettingsContextProvider';
 import ModalContainer from '../../../components/Modals/ModalContainer';
 import WarningModalContent from '../../../components/Modals/WarningModal/WarningModalContent';
-import { useHistoryContext } from '../../../context/HistoryContextProvider';
 import ChatHeaderRightButtons from '../../../components/Buttons/ChatHeaderRightButtons';
 import ZoomImageModalContainer from '../../../components/Modals/ZoomImage/ZoomImageModalContainer';
 import ImagePickerModalContent from '../../../components/Modals/ImagePicker/ImagePickerModalContent';
 import ChatInterface from './ChatInterface';
-
+import VocieRecordingModalContent from '../../../components/Modals/VoiceRecording/VoiceRecordingModalContent';
 
 import { chatUtility } from './lib/chatUtility';
 
@@ -20,10 +20,13 @@ const ChatContainer = ({ navigation, route }) => {
 
     // local states
     const [streamData, setStreamData] = useState('');
+    const [recordedUri, setRecordedUri] = useState(null);
     const [tempUserMessage, setTempUserMessage] = useState(null);
     const [showWarningModal, setShowWarningModal] = useState({ show: false, message: null });
     const [showNewChatModal, setShowNewChatModal] = useState(false);
     const [showZoomImage, setShowZoomImage] = useState({ show: false, imageSource: null });
+    const [showVoiceRecording, setShowVoiceRecording] = useState({ show: false });
+    const [isLoading, setIsLoading] = useState(false);
 
     // Settings context
     const settingsContextData = useSettingsContext();
@@ -43,11 +46,10 @@ const ChatContainer = ({ navigation, route }) => {
     const addHistoryItem = (value) => historyContextData.addChatHistoryItem(value);
 
 
-
     const submitPrompt = async (prompt) => {
 
         try {
-
+            setIsLoading(true);
             let noWarnings = chatUtility.checkForWarnings(prompt, historyId);
             if (noWarnings.status !== 'Success' || noWarnings.status === 'Error') {
                 // if checkForWarnings returns error..
@@ -96,6 +98,7 @@ const ChatContainer = ({ navigation, route }) => {
 
                             setTempUserMessage(null);
                             setStreamData('');
+                            setIsLoading(false);
                             return { status: 'Success' };
                         }
                     )
@@ -108,14 +111,96 @@ const ChatContainer = ({ navigation, route }) => {
         } catch (error) {
             setShowWarningModal({ show: true, message: error.message });
             setTempUserMessage(null);
+            setIsLoading(false);
         }
     }
+
+    const transcribeAudio = async (uri) => {
+        let filesData = uri.split('/');
+        let ext = filesData[filesData.length - 1].split('.')[1];
+
+        const formData = new FormData();
+        formData.append('file', {
+            uri: uri,
+            name: `transcribe.${ext}`,
+            type: `audio/${ext}`,
+        });
+
+        try {
+
+            // PROD
+            // return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_PROD, {
+
+            // DEV 
+            return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_DEV, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            })
+                .then((res) => res.json())
+                .then(resp => {
+                    if (resp?.status !== 'Success') {
+                        if (resp.message) {
+                            throw new Error(`${resp.message}`);
+                        } else {
+                            throw new Error(`Error while trying to transcribe audio..`);
+                        }
+                    }
+
+                    setRecordedUri(null);
+                    return { status: 'Success', payload: resp.payload };
+                })
+                .catch((error) => {
+                    throw new Error(error.message);
+                });
+
+        } catch (error) {
+            //console.log('erro in try catch   ', error);
+            setRecordedUri(null);
+            throw new Error(error.message);
+        }
+
+    }
+
 
     useEffect(() => {
         if (!historyId) {
             setHistoryId();
         }
     }, []);
+
+    useEffect(() => {
+
+        const transcribeThenSubmit = async (recordedUri) => {
+
+            try {
+                setIsLoading(true);
+                let res = await transcribeAudio(recordedUri);
+                if (!res || res.status != 'Success') {
+                    throw new Error(res?.message ? res.message : 'no results from transcribeAudio');
+                }
+                await submitPrompt(res.payload)
+                if (isLoading == true) {
+                    setIsLoading(false);
+                }
+
+            } catch (error) {
+                // console.log('Error..');
+                setShowWarningModal({ show: true, message: error.message });
+                setIsLoading(false);
+            }
+        }
+
+
+        if (recordedUri && recordedUri != undefined) {
+            console.log('Effect ');
+
+            transcribeThenSubmit(recordedUri);
+
+        }
+    }, [recordedUri])
 
     useEffect(() => {
         // show buttons in header
@@ -139,7 +224,7 @@ const ChatContainer = ({ navigation, route }) => {
             <WhiteBottomWrapper keyId={'cardChat'} route={route}>
                 <OpacityWrapper keyId={'opacityChat'}>
 
-                    <ChatInterface submitPrompt={submitPrompt} setShowZoomImage={setShowZoomImage} tempUserMessage={tempUserMessage} streamData={streamData} history={history} historyId={historyId} />
+                    <ChatInterface submitPrompt={submitPrompt} setShowZoomImage={setShowZoomImage} tempUserMessage={tempUserMessage} streamData={streamData} history={history} historyId={historyId} setShowVoiceRecording={setShowVoiceRecording} isLoading={isLoading} />
 
                 </OpacityWrapper>
             </WhiteBottomWrapper>
@@ -194,6 +279,13 @@ const ChatContainer = ({ navigation, route }) => {
 
                 <ZoomImageModalContainer modalVisible={showZoomImage.show} callbackCancel={() => setShowZoomImage(false)} imageSize={'1024x1024'} imageSource={showZoomImage.imageSource}>
                 </ZoomImageModalContainer>
+            }
+            {
+                showVoiceRecording.show &&
+                <ModalContainer modalVisible={showVoiceRecording.show} callbackCancel={() => setShowVoiceRecording({ show: false, })}>
+                    <VocieRecordingModalContent setRecordedUri={setRecordedUri} />
+
+                </ModalContainer>
             }
         </>
     )

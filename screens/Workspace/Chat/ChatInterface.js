@@ -7,7 +7,7 @@ import FooterInteractionContainer from '../../../components/FooterInteraction/Fo
 import ChatMessage from './ChatMessage';
 
 
-const ChatInterface = ({ history, historyId, tempUserMessage, streamData, submitPrompt, setShowZoomImage }) => {
+const ChatInterface = ({ history, historyId, tempUserMessage, streamData, submitPrompt, setShowZoomImage, setShowVoiceRecording, isLoading }) => {
 
     const scrollRef = useRef(null);
 
@@ -65,7 +65,7 @@ const ChatInterface = ({ history, historyId, tempUserMessage, streamData, submit
             {/* Chat body  end*/}
 
             {/* Footer */}
-            <FooterInteractionContainer screenName={'Chat'} callback={submitPrompt} />
+            <FooterInteractionContainer screenName={'Chat'} callback={submitPrompt} setShowVoiceRecording={setShowVoiceRecording} isLoading={isLoading} />
         </>
     );
 };

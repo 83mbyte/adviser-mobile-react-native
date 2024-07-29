@@ -13,6 +13,8 @@ const gptAPI = require('./lib/gptAPI');
 const { Anthropic } = require('@anthropic-ai/sdk')
 const claudeAPI = require('./lib/claudeAPI');
 
+const multipart = require('parse-multipart-data');
+
 //init app, database
 const app = initializeApp();
 const database = getDatabase(app);
@@ -96,6 +98,44 @@ exports.userDeleted = functionsV1.auth.user().onDelete((user) => {
         }).catch(error => ({ type: 'Error', text: 'user data was not deleted..' }))
 })
 
+// Speach-to-Text
+
+exports.requestToTranscribe = onRequest({
+    cors: true, // DEV
+
+    // PROD
+    // cors:[  ADDD_SOME_DATA_HERE]
+    // enforceAppCheck: true, // Reject requests with missing or invalid App Check tokens. 
+},
+    async (req, res) => {
+        if (req.method !== 'POST') {
+            return res.status(400).json({ status: 'Error', message: 'Bad request.' });
+        }
+        const contentType = req.header('content-type');
+        const boundary = contentType.split(';')[1].trim().slice(9,);
+
+        if (!boundary) {
+            // in case of incorrect data to parse 
+            return res.status(400).json({ status: 'Error', message: 'Bad request. Incorrect data provided.' });
+        }
+
+        if (!req.body) {
+            return res.send({ status: 'Error', message: 'No voice recorded..' })
+        }
+
+        // if OK
+        const parsedForm = multipart.parse(req.body, boundary); // parse files in formData
+
+        const audio = parsedForm[0]; // will be: { filename: 'tmp.mp4', type: 'audio/m4a', data: <Buffer 41 41 41 41 42 42 42 42> }
+
+        if (!audio && !audio.data && !audio.filename && !audio.type) {
+            return res.send({ status: 'Error', message: 'Something wrong with the audio file. Try again.' })
+        }
+
+
+        return await gptAPI.requestToTranscribe(SECRET_KEY_OPENAI, res, { buff: audio.data, filename: audio.filename, type: audio.type, lastModified: Date.now() });
+    }
+)
 
 // STREAM func
 

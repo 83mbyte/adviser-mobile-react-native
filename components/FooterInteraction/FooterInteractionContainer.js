@@ -7,7 +7,6 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-na
 import animationLibrary from '../../lib/animationConfig';
 import ChatAttachmentItem from '../ChatAttachment/ChatAttachmentItem';
 import { useAttachContext } from '../../context/AttachContextProvider';
-import { useSettingsContext } from '../../context/SettingsContextProvider';
 import Loader from '../Loaders/Loader';
 import BottomSafeViewPadding from '../Wrappers/BottomSafeViewPadding';
 
@@ -18,13 +17,14 @@ const FooterInteractionContainer = ({
     icon = 'send-sharp',
     // icon = 'send',
     placeholder = 'type here..',
+    setShowVoiceRecording,
+    isLoading,
     callback }) => {
 
 
     const attachContextData = useAttachContext();
     const attachmentsArray = attachContextData.data.attachmentsArray;
 
-    const settingsContextData = useSettingsContext();
 
     const [inputValue, setInputValue] = useState(null);
     const [showAttachment, setShowAttachment] = useState(false);
@@ -96,7 +96,7 @@ const FooterInteractionContainer = ({
 
 
                         {
-                            buttonDisabled
+                            isLoading
                                 ? <Loader size={12} />
 
                                 : <>
@@ -109,12 +109,16 @@ const FooterInteractionContainer = ({
                                             ?
                                             <View style={{ flexDirection: 'row', columnGap: 15 }}>
 
-                                                {
 
-                                                    <TouchableOpacity onPress={() => attachContextData.showAttachmentPicker(true)} style={styles.iconButton}>
-                                                        <Ionicons name={'attach-sharp'} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
-                                                    </TouchableOpacity>
-                                                }
+
+                                                <TouchableOpacity onPress={() => setShowVoiceRecording({ show: true })} style={styles.iconButton}>
+                                                    <Ionicons name={'mic-sharp'} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity onPress={() => attachContextData.showAttachmentPicker(true)} style={styles.iconButton}>
+                                                    <Ionicons name={'attach-sharp'} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
+                                                </TouchableOpacity>
+
                                                 <TouchableOpacity onPress={(!buttonDisabled) ? submitHandler : null} style={styles.iconButton}>
                                                     <Ionicons name={icon} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
                                                 </TouchableOpacity>
