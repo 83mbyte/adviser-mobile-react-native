@@ -14,7 +14,7 @@ const enterTransition = animationLibrary.Stretch.entering;
 const exitTransition = animationLibrary.Stretch.exiting;
 
 
-const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonPress, downloadButtonPress, deleteButtonPress, startNewButtonPress, submitImagesForm, settingsButtonPress, historyButtonPress, isLoading }) => {
+const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonPress, downloadButtonPress, deleteButtonPress, startNewButtonPress, submitImagesForm, settingsButtonPress, historyButtonPress, isLoading, micButtonPress }) => {
     const scrollRef = useRef(null);
 
     const renderItemCachedFunc = useCallback(
@@ -61,7 +61,7 @@ const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonP
                 </Animated.FlatList>
 
             </Animated.View >
-            <FooterInteractionContainer icon='brush' screenName='Generate Images' callback={submitImagesForm} />
+            <FooterInteractionContainer icon='brush' screenName='Generate Images' callback={submitImagesForm} isLoading={isLoading} micButtonPress={micButtonPress} />
         </>
     );
 };

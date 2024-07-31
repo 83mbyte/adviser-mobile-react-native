@@ -18,12 +18,14 @@ import { connectFunctionsEmulator, httpsCallable } from 'firebase/functions';
 import { cloudFunctions } from '../../../firebaseConfig';
 import { fsAPI } from '../../../lib/fsAPI';
 import ZoomImageModalContainer from '../../../components/Modals/ZoomImage/ZoomImageModalContainer';
+import VocieRecordingModalContent from '../../../components/Modals/VoiceRecording/VoiceRecordingModalContent';
 
 const initialState = {
     showZoomImage: { showModal: false, imageSource: null, imageSize: null },
     showDeleteModal: { showoModal: false, imageToDelete: null },
     showStartNewModal: { showModal: false },
-    showWarningModal: { showModal: false, message: null }
+    showWarningModal: { showModal: false, message: null },
+    showVoiceRecording: { showModal: false, recordedUri: null }
 }
 
 const reducer = (prevState, action) => {
@@ -59,6 +61,12 @@ const reducer = (prevState, action) => {
                 ...prevState,
                 showWarningModal: action.payload ? action.payload : { showModal: false, message: null }
             }
+
+        case 'TOGGLE-VOICE-RECORDING':
+            return {
+                ...prevState,
+                showVoiceRecording: action.payload ? action.payload : { showModal: false, recordedUri: null }
+            }
         default:
             return prevState;
     }
@@ -93,6 +101,8 @@ const GenerateImagesContainer = ({ navigation, route }) => {
             payload: { showModal: true, imageSource: imageSource, imageSize: imageSize }
         });
     };
+
+
 
     const deleteImageItem = () => {
         historyContextData.deleteImageItem({ historyId, imageSource: utilityState.showDeleteModal.imageToDelete });
@@ -165,6 +175,13 @@ const GenerateImagesContainer = ({ navigation, route }) => {
         return { type: 'Success', message: 'No warnings detected.' }
     }
 
+    const micButtonPress = () => {
+        dispatch({
+            type: 'TOGGLE-VOICE-RECORDING',
+            payload: { showModal: true, recordedUri: null }
+        })
+    }
+
 
     const submitImagesForm = async (value) => {
 
@@ -221,11 +238,87 @@ const GenerateImagesContainer = ({ navigation, route }) => {
         }
     }
 
+    const transcribeAudio = async (uri) => {
+        let filesData = uri.split('/');
+        let ext = filesData[filesData.length - 1].split('.')[1];
+
+        const formData = new FormData();
+        formData.append('file', {
+            uri: uri,
+            name: `transcribe.${ext}`,
+            type: `audio/${ext}`,
+        });
+
+        try {
+
+            // PROD
+            // return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_PROD, {
+
+            // DEV 
+            return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_DEV, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            })
+                .then((res) => res.json())
+                .then(resp => {
+                    if (resp?.status !== 'Success') {
+                        if (resp.message) {
+                            throw new Error(`${resp.message}`);
+                        } else {
+                            throw new Error(`Error while trying to transcribe audio..`);
+                        }
+                    }
+
+                    dispatch({ type: 'TOGGLE-VOICE-RECORDING' });
+                    return { status: 'Success', payload: resp.payload };
+                })
+                .catch((error) => {
+                    throw new Error(error.message);
+                });
+
+        } catch (error) {
+            //console.log('erro in try catch   ', error);
+            dispatch({ type: 'TOGGLE-VOICE-RECORDING' });
+            throw new Error(error.message);
+        }
+
+    }
+
     useEffect(() => {
         if (!historyId) {
             setHistoryId()
         }
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        const transcribeThenSubmit = async (recordedUri) => {
+
+            try {
+                setIsLoading(true);
+                let res = await transcribeAudio(recordedUri);
+                if (!res || res.status != 'Success') {
+                    throw new Error(res?.message ? res.message : 'no results from transcribeAudio');
+                }
+                await submitImagesForm(res.payload);
+                if (isLoading == true) {
+                    setIsLoading(false);
+                }
+
+            } catch (error) {
+                // console.log('Error..');
+                dispatch({ type: 'TOGGLE-WARNING-MODAL', payload: { showModal: true, message: error.message } });
+                setIsLoading(false);
+            }
+        }
+
+        if (utilityState.showVoiceRecording.recordedUri && utilityState.showVoiceRecording.recordedUri != undefined) {
+
+            transcribeThenSubmit(utilityState.showVoiceRecording.recordedUri);
+        }
+    }, [utilityState.showVoiceRecording.recordedUri]);
 
     return (
 
@@ -233,10 +326,21 @@ const GenerateImagesContainer = ({ navigation, route }) => {
         <>
             <WhiteBottomWrapper route={route} key={'cardGenerateImages'}>
                 <OpacityWrapper key={'opacityGenerateImages'}>
-                    {/* DEV */}
-                    {/* <GenerateImagesInterface navigation={navigation} data={(history && Object.keys(history).length > 0) ? history[historyId] : Object.values(history)[0]} zoomButtonPress={zoomButtonPress} downloadButtonPress={downloadButtonPress} deleteButtonPress={deleteButtonPress} /> */}
-                    {/* PROD */}
-                    <GenerateImagesInterface navigation={navigation} data={history && Object.keys(history) > 0 ? history[historyId] : []} zoomButtonPress={zoomButtonPress} downloadButtonPress={downloadButtonPress} deleteButtonPress={deleteButtonPress} startNewButtonPress={startNewButtonPress} submitImagesForm={submitImagesForm} historyIndexes={historyIndexes} settingsButtonPress={settingsButtonPress} historyButtonPress={historyButtonPress} isLoading={isLoading} />
+
+                    <GenerateImagesInterface
+                        navigation={navigation}
+                        data={history && Object.keys(history) > 0 ? history[historyId] : []}
+                        zoomButtonPress={zoomButtonPress}
+                        downloadButtonPress={downloadButtonPress}
+                        deleteButtonPress={deleteButtonPress}
+                        startNewButtonPress={startNewButtonPress}
+                        submitImagesForm={submitImagesForm}
+                        historyIndexes={historyIndexes}
+                        settingsButtonPress={settingsButtonPress}
+                        historyButtonPress={historyButtonPress}
+                        isLoading={isLoading}
+                        micButtonPress={micButtonPress}
+                    />
 
                 </OpacityWrapper>
 
@@ -291,6 +395,13 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                         message={utilityState.showWarningModal.message}
                         buttons={[{ title: 'OK', type: 'solid' }]}
                     />
+                </ModalContainer>
+            }
+            {
+                // voice recording
+                utilityState.showVoiceRecording.showModal &&
+                <ModalContainer modalVisible={utilityState.showVoiceRecording.showModal} callbackCancel={() => dispatch({ type: 'TOGGLE-VOICE-RECORDING' })}>
+                    <VocieRecordingModalContent setRecordedUri={(value) => dispatch({ type: 'TOGGLE-VOICE-RECORDING', payload: { showModal: false, recordedUri: value } })} />
                 </ModalContainer>
             }
         </>

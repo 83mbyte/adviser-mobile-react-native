@@ -42,7 +42,7 @@ const VocieRecordingModalContent = ({ setRecordedUri }) => {
     }
     const stopRecording = async () => {
         modalContext.closeModal();
-        // console.log('Stopping recording..');
+        console.log('Stopping recording..');
         await recording.stopAndUnloadAsync();
         await Audio.setAudioModeAsync(
             {
