@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { Modal, View, StyleSheet, } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 
 import CloseButton from '../Buttons/CloseButton';
 
@@ -38,7 +38,7 @@ const ModalContainer = ({ modalVisible, callbackCancel, customHeight = null, chi
                 <View style={styles.centeredView}  >
                     {
                         showContent &&
-                        <Animated.View style={customHeight ? [styles.whiteContainer, { height: customHeight }] : styles.whiteContainer} entering={enterTransition.delay(0)} exiting={exitTransition}>
+                        <Animated.View style={customHeight ? [styles.whiteContainer, { maxHeight: customHeight }] : styles.whiteContainer} entering={enterTransition.delay(0)} exiting={exitTransition} layout={LinearTransition}>
                             <View style={styles.closeButtonContainer}>
                                 <CloseButton onPressCallback={closeModalAnimated} />
                             </View>
@@ -71,10 +71,11 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         // flex: 1,
         flexDirection: 'column',
-        minHeight: '10%',
+        minHeight: '20%',
         // height: '25%',
         maxHeight: '60%',
-        width: '100%'
+        width: '100%',
+        overflow: 'hidden'
     },
     closeButtonContainer: { justifyContent: 'flex-end', flexDirection: 'row', marginBottom: 3 },
     // footer: {

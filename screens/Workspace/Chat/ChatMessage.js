@@ -3,10 +3,31 @@ import { Text, View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
 import { createJSXFromHTML } from './lib/chatUtility';
 
-const ChatMessage = ({ message, type, attachments = null, setShowZoomImage, format = null }) => {
+const ChatMessage = ({ message, type, attachments = null, setShowZoomImage, format = null, copyMessageHandler }) => {
 
 
     const [jsxFromHTML, setJSXFromHTML] = useState([]);
+
+    const pressToCopyMessage = (data) => {
+
+        let messageToEdit = '';
+
+        if (data.type == 'array') {
+
+            data.value.map((item) => {
+
+                if (item.value == '') {
+                    // messageToEdit += '\n';
+                } else {
+                    messageToEdit += item.value + '\n';
+                }
+            })
+        } else {
+            messageToEdit = data.value;
+        }
+
+        copyMessageHandler(messageToEdit);
+    }
 
 
     useEffect(() => {
@@ -29,7 +50,7 @@ const ChatMessage = ({ message, type, attachments = null, setShowZoomImage, form
                         attachments.map((item, index) => {
                             return (
                                 <View style={{ flexDirection: 'column' }} key={index}>
-                                    <TouchableOpacity onLongPress={() => setShowZoomImage({ show: true, imageSource: item })}>
+                                    <TouchableOpacity onLongPress={() => setShowZoomImage(item)}>
                                         <Image source={{ uri: item }} style={{ width: 100, height: 100, marginBottom: 5 }} onError={() => alert('no image')} />
                                     </TouchableOpacity>
                                 </View>
@@ -41,21 +62,31 @@ const ChatMessage = ({ message, type, attachments = null, setShowZoomImage, form
 
                         {
                             !format || format != 'HTML'
-                                ? <Text style={type == 'user' ? styles.userMessageText : styles.assistantMessageText}>
+                                ? <Text
+                                    onLongPress={() => pressToCopyMessage({ type: 'string', value: message })}
+                                    style={type == 'user' ? styles.userMessageText : styles.assistantMessageText}
+                                >
                                     {message}
                                 </Text>
                                 :
                                 <>
                                     {/* if format html */}
+                                    <TouchableOpacity onLongPress={() => pressToCopyMessage({ type: 'array', value: jsxFromHTML })} >
 
-                                    <View>
-                                        {jsxFromHTML && jsxFromHTML.map((item, index) => {
+                                        {
+                                            jsxFromHTML && jsxFromHTML.map((item, index) => {
 
-                                            return (
-                                                <Text key={index} style={[styles.assistantMessageText, item.style && { ...item.style }]}>{item.value && item.value}</Text>
-                                            )
-                                        })}
-                                    </View>
+                                                return (
+                                                    <Text
+                                                        key={index}
+                                                        style={[styles.assistantMessageText, item.style && { ...item.style }]}
+                                                    >
+                                                        {item.value && item.value}
+                                                    </Text>
+                                                )
+                                            })
+                                        }
+                                    </TouchableOpacity>
                                 </>
                         }
                     </View>

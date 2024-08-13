@@ -1,4 +1,4 @@
-import React, { useEffect, useState, } from 'react';
+import React, { useEffect, useReducer, useState, } from 'react';
 import { useAttachContext } from '../../../context/AttachContextProvider';
 import { useSettingsContext } from '../../../context/SettingsContextProvider';
 import { useHistoryContext } from '../../../context/HistoryContextProvider';
@@ -13,19 +13,66 @@ import ZoomImageModalContainer from '../../../components/Modals/ZoomImage/ZoomIm
 import ImagePickerModalContent from '../../../components/Modals/ImagePicker/ImagePickerModalContent';
 import ChatInterface from './ChatInterface';
 import VocieRecordingModalContent from '../../../components/Modals/VoiceRecording/VoiceRecordingModalContent';
+import CopyMessageModalContent from '../../../components/Modals/CopyMessageModal/CopyMessageModalContent';
+import FooterInteractionContainer from '../../../components/FooterInteraction/FooterInteractionContainer';
 
 import { chatUtility } from './lib/chatUtility';
+
+
+const initialState = {
+    showWarningModal: { showModal: false, message: null },
+    showStartNewModal: { showModal: false },
+    showZoomImage: { showModal: false, imageSource: null, imageSize: null },
+    showVoiceRecording: { showModal: false, recordedUri: null },
+    showCopyMessageModal: { showModal: false, message: null }
+}
+
+const reducer = (prevState, action) => {
+    switch (action.type) {
+        case 'TOGGLE-ZOOM-IMAGE':
+
+            if (action.payload) {
+                return { ...prevState, showZoomImage: action.payload }
+            }
+            return {
+                ...prevState,
+                showZoomImage: { showModal: false, imageSource: null, imageSize: null }
+            }
+
+        case 'TOGGLE-START-NEW':
+            return {
+                ...prevState,
+                showStartNewModal: { showModal: action.payload || false }
+            }
+
+        case 'TOGGLE-WARNING-MODAL':
+            return {
+                ...prevState,
+                showWarningModal: action.payload ? action.payload : { showModal: false, message: null }
+            }
+
+        case 'TOGGLE-VOICE-RECORDING':
+            return {
+                ...prevState,
+                showVoiceRecording: action.payload ? action.payload : { showModal: false, recordedUri: null }
+            }
+
+        case 'TOGGLE-COPY-MESSAGE-MODAL':
+            return {
+                ...prevState,
+                showCopyMessageModal: action.payload ? action.payload : { showModal: false, message: null }
+            }
+        default:
+            return prevState;
+    }
+}
+
 
 const ChatContainer = ({ navigation, route }) => {
 
     // local states
     const [streamData, setStreamData] = useState('');
-    const [recordedUri, setRecordedUri] = useState(null);
     const [tempUserMessage, setTempUserMessage] = useState(null);
-    const [showWarningModal, setShowWarningModal] = useState({ show: false, message: null });
-    const [showNewChatModal, setShowNewChatModal] = useState(false);
-    const [showZoomImage, setShowZoomImage] = useState({ show: false, imageSource: null });
-    const [showVoiceRecording, setShowVoiceRecording] = useState({ show: false });
     const [isLoading, setIsLoading] = useState(false);
 
     // Settings context
@@ -45,6 +92,7 @@ const ChatContainer = ({ navigation, route }) => {
     const setHistoryId = (obj) => historyContextData.setChatHistoryId(obj);
     const addHistoryItem = (value) => historyContextData.addChatHistoryItem(value);
 
+    const [utilityState, dispatch] = useReducer(reducer, initialState);
 
     const submitPrompt = async (prompt) => {
 
@@ -109,7 +157,7 @@ const ChatContainer = ({ navigation, route }) => {
 
 
         } catch (error) {
-            setShowWarningModal({ show: true, message: error.message });
+            dispatch({ type: 'TOGGLE-WARNING-MODAL', payload: { showModal: true, message: error.message } });
             setTempUserMessage(null);
             setIsLoading(false);
         }
@@ -149,7 +197,7 @@ const ChatContainer = ({ navigation, route }) => {
                         }
                     }
 
-                    setRecordedUri(null);
+                    dispatch({ type: 'TOGGLE-VOICE-RECORDING' })
                     return { status: 'Success', payload: resp.payload };
                 })
                 .catch((error) => {
@@ -158,10 +206,36 @@ const ChatContainer = ({ navigation, route }) => {
 
         } catch (error) {
             //console.log('erro in try catch   ', error);
-            setRecordedUri(null);
+            dispatch({ type: 'TOGGLE-VOICE-RECORDING' })
             throw new Error(error.message);
         }
 
+    }
+
+    const startNewButtonPress = (value) => {
+        dispatch({ type: 'TOGGLE-START-NEW', payload: value || false })
+    }
+
+    const zoomButtonPress = (imageSource, imageSize) => {
+
+        dispatch({
+            type: 'TOGGLE-ZOOM-IMAGE',
+            payload: { showModal: true, imageSource: imageSource, imageSize: imageSize }
+        });
+    };
+
+    const micButtonPress = () => {
+        dispatch({
+            type: 'TOGGLE-VOICE-RECORDING',
+            payload: { showModal: true, recordedUri: null }
+        })
+    }
+
+    const copyMessageHandler = (message) => {
+        dispatch({
+            type: 'TOGGLE-COPY-MESSAGE-MODAL',
+            payload: { showModal: true, message: message || null }
+        });
     }
 
 
@@ -187,20 +261,18 @@ const ChatContainer = ({ navigation, route }) => {
                 }
 
             } catch (error) {
-                // console.log('Error..');
-                setShowWarningModal({ show: true, message: error.message });
+                // console.log('Error..'); 
+                dispatch({ type: 'TOGGLE-WARNING-MODAL', payload: { showModal: true, message: error.message } });
                 setIsLoading(false);
             }
         }
 
+        if (utilityState.showVoiceRecording.recordedUri && utilityState.showVoiceRecording.recordedUri != undefined) {
 
-        if (recordedUri && recordedUri != undefined) {
-            console.log('Effect ');
-
-            transcribeThenSubmit(recordedUri);
-
+            transcribeThenSubmit(utilityState.showVoiceRecording.recordedUri);
         }
-    }, [recordedUri])
+
+    }, [utilityState.showVoiceRecording.recordedUri])
 
     useEffect(() => {
         // show buttons in header
@@ -211,7 +283,7 @@ const ChatContainer = ({ navigation, route }) => {
                     <ChatHeaderRightButtons
                         color='white'
                         onPressHistory={() => navigation.navigate('Chat History')}
-                        onPressNewChat={() => setShowNewChatModal(true)}
+                        onPressNewChat={() => startNewButtonPress(true)}
                     />
                 ),
             });
@@ -224,7 +296,9 @@ const ChatContainer = ({ navigation, route }) => {
             <WhiteBottomWrapper keyId={'cardChat'} route={route}>
                 <OpacityWrapper keyId={'opacityChat'}>
 
-                    <ChatInterface submitPrompt={submitPrompt} setShowZoomImage={setShowZoomImage} tempUserMessage={tempUserMessage} streamData={streamData} history={history} historyId={historyId} setShowVoiceRecording={setShowVoiceRecording} isLoading={isLoading} />
+                    <ChatInterface submitPrompt={submitPrompt} setShowZoomImage={zoomButtonPress} tempUserMessage={tempUserMessage} streamData={streamData} history={history} historyId={historyId} copyMessageHandler={copyMessageHandler} />
+                    <FooterInteractionContainer screenName={'Chat'} callback={submitPrompt} micButtonPress={micButtonPress} isLoading={isLoading} />
+
 
                 </OpacityWrapper>
             </WhiteBottomWrapper>
@@ -237,10 +311,10 @@ const ChatContainer = ({ navigation, route }) => {
 
             {
                 // popup notification about an error..
-                showWarningModal.show &&
-                <ModalContainer modalVisible={showWarningModal.show} callbackCancel={() => setShowWarningModal({ show: false, message: null })}>
+                utilityState.showWarningModal.showModal &&
+                <ModalContainer modalVisible={utilityState.showWarningModal.showModal} callbackCancel={() => dispatch({ type: 'TOGGLE-WARNING-MODAL' })}>
                     <WarningModalContent
-                        message={showWarningModal.message}
+                        message={utilityState.showWarningModal.message}
                         buttons={[{ title: 'OK', type: 'solid' }]}
                     />
                 </ModalContainer>
@@ -248,8 +322,8 @@ const ChatContainer = ({ navigation, route }) => {
 
             {
                 // popup notification about a new chat creation
-                showNewChatModal &&
-                <ModalContainer modalVisible={showNewChatModal} callbackCancel={() => setShowNewChatModal(false)}>
+                utilityState.showStartNewModal.showModal &&
+                <ModalContainer callbackCancel={() => startNewButtonPress(false)}>
                     <WarningModalContent
                         title='Start a New Chat'
                         message={'By clicking AGREE, you will close the current chat and open a new one.'}
@@ -263,6 +337,7 @@ const ChatContainer = ({ navigation, route }) => {
                         ]}
                     />
                 </ModalContainer>
+
             }
 
             {
@@ -270,21 +345,32 @@ const ChatContainer = ({ navigation, route }) => {
                 attachmentsPickerModal &&
                 <ModalContainer modalVisible={attachmentsPickerModal} callbackCancel={() => attachContextData.showAttachmentPicker(false)}>
                     <ImagePickerModalContent />
-
                 </ModalContainer>
             }
             {
                 // modal zooom image
-                showZoomImage.show &&
+                utilityState.showZoomImage.showModal &&
 
-                <ZoomImageModalContainer modalVisible={showZoomImage.show} callbackCancel={() => setShowZoomImage(false)} imageSize={'1024x1024'} imageSource={showZoomImage.imageSource}>
+                <ZoomImageModalContainer modalVisible={utilityState.showZoomImage.showModal} callbackCancel={() => dispatch({ type: 'TOGGLE-ZOOM-IMAGE' })} imageSize={'1024x1024'} imageSource={utilityState.showZoomImage.imageSource}>
                 </ZoomImageModalContainer>
+
             }
             {
-                showVoiceRecording.show &&
-                <ModalContainer modalVisible={showVoiceRecording.show} callbackCancel={() => setShowVoiceRecording({ show: false, })}>
-                    <VocieRecordingModalContent setRecordedUri={setRecordedUri} />
+                utilityState.showVoiceRecording.showModal &&
+                <ModalContainer modalVisible={utilityState.showVoiceRecording.showModal} callbackCancel={() => dispatch({ type: 'TOGGLE-VOICE-RECORDING' })}>
 
+                    <VocieRecordingModalContent setRecordedUri={(value) => dispatch({ type: 'TOGGLE-VOICE-RECORDING', payload: { showModal: false, recordedUri: value } })} />
+
+                </ModalContainer>
+            }
+
+            {
+                utilityState.showCopyMessageModal.showModal &&
+                <ModalContainer
+                    modalVisible={utilityState.showCopyMessageModal.showModal}
+                    callbackCancel={() => dispatch({ type: 'TOGGLE-COPY-MESSAGE-MODAL' })}
+                >
+                    <CopyMessageModalContent message={utilityState.showCopyMessageModal.message} />
                 </ModalContainer>
             }
         </>

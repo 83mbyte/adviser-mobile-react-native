@@ -2,12 +2,10 @@ import React, { useRef } from 'react';
 import Animated from 'react-native-reanimated';
 import { StyleSheet } from 'react-native';
 import { uid } from 'uid';
-
-import FooterInteractionContainer from '../../../components/FooterInteraction/FooterInteractionContainer';
 import ChatMessage from './ChatMessage';
 
 
-const ChatInterface = ({ history, historyId, tempUserMessage, streamData, submitPrompt, setShowZoomImage, setShowVoiceRecording, isLoading }) => {
+const ChatInterface = ({ history, historyId, tempUserMessage, streamData, setShowZoomImage, copyMessageHandler }) => {
 
     const scrollRef = useRef(null);
 
@@ -39,8 +37,8 @@ const ChatInterface = ({ history, historyId, tempUserMessage, streamData, submit
                                     } else {
                                         return (
                                             <Animated.View key={uid()} style={styles.messagesBlock}>
-                                                <ChatMessage type={'user'} message={item.user.content} key={uid()} attachments={item.user.showAttachments} setShowZoomImage={setShowZoomImage} />
-                                                <ChatMessage type={'assistant'} format={item.assistant.format} message={item.assistant.content} key={uid()} />
+                                                <ChatMessage type={'user'} message={item.user.content} key={uid()} attachments={item.user.showAttachments} setShowZoomImage={setShowZoomImage} copyMessageHandler={copyMessageHandler} />
+                                                <ChatMessage type={'assistant'} format={item.assistant.format} message={item.assistant.content} key={uid()} copyMessageHandler={copyMessageHandler} />
                                             </Animated.View>
                                         )
                                     }
@@ -63,9 +61,6 @@ const ChatInterface = ({ history, historyId, tempUserMessage, streamData, submit
                 </Animated.ScrollView>
             </Animated.View>
             {/* Chat body  end*/}
-
-            {/* Footer */}
-            <FooterInteractionContainer screenName={'Chat'} callback={submitPrompt} setShowVoiceRecording={setShowVoiceRecording} isLoading={isLoading} />
         </>
     );
 };

@@ -17,7 +17,6 @@ const FooterInteractionContainer = ({
     icon = 'send-sharp',
     // icon = 'send',
     placeholder = 'type here..',
-    setShowVoiceRecording,
     micButtonPress = null,
     isLoading,
     callback }) => {
@@ -112,7 +111,7 @@ const FooterInteractionContainer = ({
 
 
 
-                                                <TouchableOpacity onPress={() => setShowVoiceRecording({ show: true })} style={styles.iconButton}>
+                                                <TouchableOpacity onPress={micButtonPress} style={styles.iconButton}>
                                                     <Ionicons name={'mic-sharp'} size={24} color={!buttonDisabled ? '#ff5456' : 'lightgray'} />
                                                 </TouchableOpacity>
 
