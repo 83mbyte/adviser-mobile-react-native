@@ -14,7 +14,6 @@ export const useAuthContext = () => {
 const initialState = {
     isLoading: true,
     isSignout: false,
-    userToken: null,
     user: null
 }
 const reducer = (prevState, action) => {

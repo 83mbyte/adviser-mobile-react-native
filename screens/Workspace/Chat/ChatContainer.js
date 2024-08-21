@@ -17,6 +17,7 @@ import CopyMessageModalContent from '../../../components/Modals/CopyMessageModal
 import FooterInteractionContainer from '../../../components/FooterInteraction/FooterInteractionContainer';
 
 import { chatUtility } from './lib/chatUtility';
+import { useAuthContext } from '../../../context/AuthContextProvider';
 
 
 const initialState = {
@@ -76,6 +77,10 @@ const ChatContainer = ({ navigation, route }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     // Settings context
+
+    const user = useAuthContext();
+    const accessToken = user.data.user.accessToken;
+
     const settingsContextData = useSettingsContext();
     const { replyLength, replyStyle, replyTone, replyFormat, replyCount, systemVersion, } = settingsContextData.data.chatSettings;
 
@@ -132,7 +137,7 @@ const ChatContainer = ({ navigation, route }) => {
                 // 
                 setTempUserMessage({ user: { content: prompt, showAttachments: null } });
 
-                return await chatUtility.streamingPromise({ discussionContext, max_tokens: 1024, setStreamData, systemVersion })
+                return await chatUtility.streamingPromise({ discussionContext, max_tokens: 1024, setStreamData, systemVersion, accessToken })
                     .then(
                         (resp) => {
 
@@ -161,6 +166,10 @@ const ChatContainer = ({ navigation, route }) => {
             setTempUserMessage(null);
             setIsLoading(false);
         }
+        finally {
+            setTempUserMessage(null);
+            setIsLoading(false);
+        }
     }
 
     const transcribeAudio = async (uri) => {
@@ -168,6 +177,7 @@ const ChatContainer = ({ navigation, route }) => {
         let ext = filesData[filesData.length - 1].split('.')[1];
 
         const formData = new FormData();
+        formData.append('accessToken', accessToken);
         formData.append('file', {
             uri: uri,
             name: `transcribe.${ext}`,
@@ -177,10 +187,10 @@ const ChatContainer = ({ navigation, route }) => {
         try {
 
             // PROD
-            // return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_PROD, {
+            return await fetch(process.env.EXPO_PUBLIC_FUNC_TRANSCRIBE_PATH_PROD, {
 
             // DEV 
-            return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_DEV, {
+            // return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_DEV, {
                 method: 'POST',
                 body: formData,
                 headers: {

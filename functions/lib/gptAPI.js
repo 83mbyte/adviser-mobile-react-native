@@ -39,7 +39,7 @@ async function requestToAssistant(openai, { messagesArray, systemVersion, tokens
 
 }
 
-async function requestToGenerateImage(openai, { size = '1024x1024', prompt, style, quality }) {
+async function requestToGenerateImage(openai, res, { size = '1024x1024', prompt, style, quality }) {
 
     try {
         const response = await openai.images.generate({
@@ -51,10 +51,13 @@ async function requestToGenerateImage(openai, { size = '1024x1024', prompt, styl
             size,
         });
         image_url = response.data[0].url;
-        return { status: 'Success', payload: image_url }
+        return res.send({ status: 'Success', payload: image_url })
+        // return { status: 'Success', payload: image_url }
 
     } catch (error) {
-        return { status: 'Error', payload: null }
+        // console.log('error: ', error)
+        return res.send({ status: 'Error', payload: error.message })
+        // return { status: 'Error', payload: error.message }
     }
 }
 
@@ -80,7 +83,7 @@ async function requestToTranscribe(openai_key, res, { buff, filename, type, last
                 return resp.json();
             })
             .then(respFinal => {
-                console.log('respFinal', respFinal);
+                // console.log('respFinal', respFinal);
 
                 if (respFinal?.text) {
                     return res.send({ status: 'Success', payload: respFinal.text })

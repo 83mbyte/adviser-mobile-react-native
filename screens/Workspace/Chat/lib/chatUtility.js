@@ -182,7 +182,7 @@ export function createDiscussionContext(arrayDataOfCurrentHistory, systemVersion
     }
 }
 
-export function streamingPromise({ discussionContext: discussionContext, max_tokens = 1024, systemVersion, setStreamData }) {
+export function streamingPromise({ discussionContext: discussionContext, max_tokens = 1024, systemVersion, setStreamData, accessToken }) {
     let stringFromChunks = '';
 
     const removeSpecialSymbolsFromChunk = (data) => {
@@ -195,7 +195,8 @@ export function streamingPromise({ discussionContext: discussionContext, max_tok
         (resolve, reject) => {
 
             const es = new EventSource(
-                process.env.EXPO_PUBLIC_EMULATOR_FUNC_STREAM_PATH,
+                // process.env.EXPO_PUBLIC_EMULATOR_FUNC_STREAM_PATH,  // DEV
+                process.env.EXPO_PUBLIC_FUNC_STREAM_PATH_PRO,   // PROD 
                 {
                     method: 'POST',
                     headers: {
@@ -205,7 +206,8 @@ export function streamingPromise({ discussionContext: discussionContext, max_tok
                     body: JSON.stringify({
                         systemVersion: systemVersion,
                         tokens: max_tokens,
-                        messagesArray: discussionContext
+                        messagesArray: discussionContext,
+                        accessToken
                     }),
                     timeout: 50000,
                     pollingInterval: 0,
@@ -234,14 +236,16 @@ export function streamingPromise({ discussionContext: discussionContext, max_tok
             es.addEventListener('error', (event) => {
                 // console.log('Stream got error..', event);
                 closeStreamOperations();
-                let errMess = event.data.slice(4,);
-                let errMessParsed = JSON.parse(errMess);
-                let errorMessageToShow = errMessParsed.error.message;
 
-                if ((errMessParsed.error.message).includes('image exceeds 5 MB maximum')) {
-                    errorMessageToShow = 'image file exceeds 5 MB maximum.';
+
+                if (event?.data && typeof event.data == 'string') {
+
+                    if ((event.data).includes('image exceeds 5 MB maximum')) {
+                        reject({ status: 'Error', name: '', message: 'Error while streeaming.. ' + 'image file exceeds 5 MB maximum.' });
+                    }
+                    reject({ status: 'Error', name: '', message: 'Error while streeaming.. ' + event.data });
                 }
-                reject({ status: 'Error', name: '', message: 'Error while streeaming.. ' + errorMessageToShow });
+
             });
 
 

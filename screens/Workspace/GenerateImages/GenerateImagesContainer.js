@@ -14,11 +14,10 @@ import ModalContainer from '../../../components/Modals/ModalContainer';
 import WarningModalContent from '../../../components/Modals/WarningModal/WarningModalContent';
 
 import { useSettingsContext } from '../../../context/SettingsContextProvider';
-import { connectFunctionsEmulator, httpsCallable } from 'firebase/functions';
-import { cloudFunctions } from '../../../firebaseConfig';
 import { fsAPI } from '../../../lib/fsAPI';
 import ZoomImageModalContainer from '../../../components/Modals/ZoomImage/ZoomImageModalContainer';
 import VocieRecordingModalContent from '../../../components/Modals/VoiceRecording/VoiceRecordingModalContent';
+import { useAuthContext } from '../../../context/AuthContextProvider';
 
 const initialState = {
     showZoomImage: { showModal: false, imageSource: null, imageSize: null },
@@ -74,6 +73,9 @@ const reducer = (prevState, action) => {
 }
 
 const GenerateImagesContainer = ({ navigation, route }) => {
+    const user = useAuthContext();
+    const accessToken = user.data.user.accessToken;
+
     const historyContextData = useHistoryContext();
     const history = historyContextData.data.imagesHistory.history;
     const historyIndexes = historyContextData.data.imagesHistory.historyIndexes;
@@ -161,14 +163,11 @@ const GenerateImagesContainer = ({ navigation, route }) => {
             });
             return { type: 'Error', message: 'Something wrong..' }
         }
-        // if (attachmentsArray.length > 0 && (!value || value == '' || value == undefined)) {
-        //     setShowWarningModal({ show: true, message: `You are trying to send attachments only. There is no message/instruction provided, it may cause to unexpected results.` });
-        //     return { type: 'Error', message: 'No comments to the image provided.' }
-        // }
+         
         if (!value || value == '' || value == undefined) {
 
             dispatch({ type: 'TOGGLE-WARNING-MODAL', payload: { showModal: true, message: `You are trying to submit an empty message. It is not allowed.` } })
-            // setShowWarningModal({ show: true, message: `You are trying to submit an empty message. It is not allowed.` });
+
             return { message: 'No message to send.', type: 'Error' }
         }
 
@@ -183,66 +182,13 @@ const GenerateImagesContainer = ({ navigation, route }) => {
     }
 
 
-    const submitImagesForm = async (value) => {
-
-        const noWarnings = checkForWarnings(value);
-
-        if (noWarnings.type == 'Success') {
-            try {
-                setIsLoading(true);
-                // DEV emulator
-                connectFunctionsEmulator(cloudFunctions, process.env.EXPO_PUBLIC_EMULATOR_PATH, 5001)
-
-                const requestToGenerateImage = httpsCallable(cloudFunctions, 'requestToGenerateImage', { limitedUseAppCheckTokens: true });
-
-                return await requestToGenerateImage({ size, quality, style, prompt: value })
-                    .then(async (funcResp) => {
-
-                        if (funcResp.data.status == 'Success') {
-
-                            let resp = await fsAPI.downloadImageToUserFolder(funcResp.data.payload, historyId);
-                            if (resp) {
-                                if (resp.status == 'Success') {
-
-                                    addImagesHistoryItem({
-                                        historyId,
-                                        data: {
-                                            id: uid(),
-                                            title: value,
-                                            source: resp.payload,
-                                            mime: resp.mime,
-                                            size: size
-                                        }
-                                    })
-                                    setIsLoading(false);
-                                    return { status: 'Success' }
-                                } else if (resp.status == 'Error') {
-                                    throw new Error('Unable to store an image to the application storage.. Please try again.')
-                                }
-                            }
-                        }
-
-                        if (funcResp.data.status == 'Error') {
-                            throw new Error('There is something wrong. Try to modify your request please.')
-                        }
-                    })
-
-            } catch (error) {
-                console.log('Error while trying to generate image');
-                dispatch({ type: 'TOGGLE-WARNING-MODAL', payload: { showModal: true, message: error.message } })
-                setIsLoading(false);
-            }
-            finally {
-                setIsLoading(false)
-            }
-        }
-    }
 
     const transcribeAudio = async (uri) => {
         let filesData = uri.split('/');
         let ext = filesData[filesData.length - 1].split('.')[1];
 
         const formData = new FormData();
+        formData.append('accessToken', accessToken);
         formData.append('file', {
             uri: uri,
             name: `transcribe.${ext}`,
@@ -252,10 +198,10 @@ const GenerateImagesContainer = ({ navigation, route }) => {
         try {
 
             // PROD
-            // return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_PROD, {
+            return await fetch(process.env.EXPO_PUBLIC_FUNC_TRANSCRIBE_PATH_PROD, {
 
             // DEV 
-            return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_DEV, {
+            // return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_DEV, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -283,6 +229,61 @@ const GenerateImagesContainer = ({ navigation, route }) => {
             //console.log('erro in try catch   ', error);
             dispatch({ type: 'TOGGLE-VOICE-RECORDING' });
             throw new Error(error.message);
+        }
+
+    }
+
+
+    const submitImagesForm = async (value) => {
+
+        const noWarnings = checkForWarnings(value);
+
+        if (noWarnings.type == 'Success') {
+            const payload = { accessToken, size, quality, style, prompt: value, };
+
+            setIsLoading(true);
+            try {
+                // await fetch( process.env.EXPO_PUBLIC_EMULATOR_FUNC_GENERATE_IMAGE_DEV,  // DEV
+                
+                await fetch(process.env.EXPO_PUBLIC_FUNC_GENERATE_IMAGE_PROD, //PORD
+                    { method: 'POST',body: JSON.stringify(payload)})
+                    
+                    .then((fetchRes) => fetchRes.json())
+                    .then(async (result) => {
+                        if (result.status == 'Success') {
+
+                            let resp = await fsAPI.downloadImageToUserFolder(result.payload, historyId);
+                            if (resp) {
+                                if (resp.status == 'Success') {
+
+                                    addImagesHistoryItem({
+                                        historyId,
+                                        data: {
+                                            id: uid(),
+                                            title: value,
+                                            source: resp.payload,
+                                            mime: resp.mime,
+                                            size: size
+                                        }
+                                    })
+                                    setIsLoading(false);
+                                    return { status: 'Success' }
+
+                                } else if (resp.status == 'Error') {
+                                    throw new Error('Unable to store an image to the application storage.. Please try again.')
+                                }
+                            }
+                        }
+
+                        if (result.status == 'Error') {
+                            throw new Error(result.message ? result.message : 'There is something wrong. Try to modify your request please.')
+                        }
+                    })
+            } catch (error) {
+               // console.log('Error while trying to generate image ', error);
+                dispatch({ type: 'TOGGLE-WARNING-MODAL', payload: { showModal: true, message: error.message } })
+                setIsLoading(false);
+            }
         }
 
     }
