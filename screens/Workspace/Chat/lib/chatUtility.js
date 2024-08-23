@@ -196,7 +196,7 @@ export function streamingPromise({ discussionContext: discussionContext, max_tok
 
             const es = new EventSource(
                 // process.env.EXPO_PUBLIC_EMULATOR_FUNC_STREAM_PATH,  // DEV
-                process.env.EXPO_PUBLIC_FUNC_STREAM_PATH_PRO,   // PROD 
+                process.env.EXPO_PUBLIC_FUNC_STREAM_PATH_PROD,   // PROD 
                 {
                     method: 'POST',
                     headers: {

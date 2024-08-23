@@ -1,9 +1,8 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { View, StyleSheet, Image, Text } from 'react-native';
-import Animated, { LinearTransition } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import DividerStyled from '../../../components/Divider/DividerStyled';
-import FooterInteractionContainer from '../../../components/FooterInteraction/FooterInteractionContainer';
 import animationLibrary from '../../../lib/animationConfig';
 import ImageActionButton from '../../../components/Buttons/ImageActionButton';
 import ImagesHeaderRightButtons from '../../../components/Buttons/ImagesHeaderRightButtons';
@@ -14,7 +13,7 @@ const enterTransition = animationLibrary.Stretch.entering;
 const exitTransition = animationLibrary.Stretch.exiting;
 
 
-const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonPress, downloadButtonPress, deleteButtonPress, startNewButtonPress, submitImagesForm, settingsButtonPress, historyButtonPress, isLoading, micButtonPress }) => {
+const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonPress, downloadButtonPress, deleteButtonPress, startNewButtonPress, settingsButtonPress, historyButtonPress }) => {
     const scrollRef = useRef(null);
 
     const renderItemCachedFunc = useCallback(
@@ -42,7 +41,7 @@ const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonP
 
     return (
         <>
-            <Animated.View style={styles.cardBody} layout={LinearTransition}>
+            <Animated.View style={styles.cardBody} layout={layoutTransition}>
 
                 <Animated.FlatList
                     showsVerticalScrollIndicator={false}
@@ -61,7 +60,6 @@ const GenerateImagesInterface = ({ navigation, data, historyIndexes, zoomButtonP
                 </Animated.FlatList>
 
             </Animated.View >
-            <FooterInteractionContainer icon='brush' screenName='Generate Images' callback={submitImagesForm} isLoading={isLoading} micButtonPress={micButtonPress} />
         </>
     );
 };

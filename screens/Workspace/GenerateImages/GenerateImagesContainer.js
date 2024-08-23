@@ -9,15 +9,16 @@ import WhiteBottomWrapper from '../../../components/Wrappers/WhiteBottomWrapper'
 import OpacityWrapper from '../../../components/Wrappers/OpacityWrapper';
 import GenerateImagesInterface from './GenerateImagesInterface';
 
+import { useAuthContext } from '../../../context/AuthContextProvider';
+import { useSettingsContext } from '../../../context/SettingsContextProvider';
 import { useHistoryContext } from '../../../context/HistoryContextProvider';
+import { fsAPI } from '../../../lib/fsAPI';
+
 import ModalContainer from '../../../components/Modals/ModalContainer';
 import WarningModalContent from '../../../components/Modals/WarningModal/WarningModalContent';
-
-import { useSettingsContext } from '../../../context/SettingsContextProvider';
-import { fsAPI } from '../../../lib/fsAPI';
 import ZoomImageModalContainer from '../../../components/Modals/ZoomImage/ZoomImageModalContainer';
 import VocieRecordingModalContent from '../../../components/Modals/VoiceRecording/VoiceRecordingModalContent';
-import { useAuthContext } from '../../../context/AuthContextProvider';
+import FooterInteractionContainer from '../../../components/FooterInteraction/FooterInteractionContainer';
 
 const initialState = {
     showZoomImage: { showModal: false, imageSource: null, imageSize: null },
@@ -79,9 +80,6 @@ const GenerateImagesContainer = ({ navigation, route }) => {
     const historyContextData = useHistoryContext();
     const history = historyContextData.data.imagesHistory.history;
     const historyIndexes = historyContextData.data.imagesHistory.historyIndexes;
-    // DEV  historyId
-    // const historyId = 123;  // DEV
-    //PROD
     const historyId = historyContextData.data.imagesHistory.currentId;
 
     const setHistoryId = () => historyContextData.setImagesHistoryId();
@@ -163,7 +161,7 @@ const GenerateImagesContainer = ({ navigation, route }) => {
             });
             return { type: 'Error', message: 'Something wrong..' }
         }
-         
+
         if (!value || value == '' || value == undefined) {
 
             dispatch({ type: 'TOGGLE-WARNING-MODAL', payload: { showModal: true, message: `You are trying to submit an empty message. It is not allowed.` } })
@@ -200,8 +198,8 @@ const GenerateImagesContainer = ({ navigation, route }) => {
             // PROD
             return await fetch(process.env.EXPO_PUBLIC_FUNC_TRANSCRIBE_PATH_PROD, {
 
-            // DEV 
-            // return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_DEV, {
+                // DEV 
+                // return await fetch(process.env.EXPO_PUBLIC_EMULATOR_FUNC_TRANSCRIBE_PATH_DEV, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -244,10 +242,10 @@ const GenerateImagesContainer = ({ navigation, route }) => {
             setIsLoading(true);
             try {
                 // await fetch( process.env.EXPO_PUBLIC_EMULATOR_FUNC_GENERATE_IMAGE_DEV,  // DEV
-                
-                await fetch(process.env.EXPO_PUBLIC_FUNC_GENERATE_IMAGE_PROD, //PORD
-                    { method: 'POST',body: JSON.stringify(payload)})
-                    
+
+                return await fetch(process.env.EXPO_PUBLIC_FUNC_GENERATE_IMAGE_PROD, //PROD
+                    { method: 'POST', body: JSON.stringify(payload) })
+
                     .then((fetchRes) => fetchRes.json())
                     .then(async (result) => {
                         if (result.status == 'Success') {
@@ -280,7 +278,7 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                         }
                     })
             } catch (error) {
-               // console.log('Error while trying to generate image ', error);
+                // console.log('Error while trying to generate image ', error);
                 dispatch({ type: 'TOGGLE-WARNING-MODAL', payload: { showModal: true, message: error.message } })
                 setIsLoading(false);
             }
@@ -335,13 +333,12 @@ const GenerateImagesContainer = ({ navigation, route }) => {
                         downloadButtonPress={downloadButtonPress}
                         deleteButtonPress={deleteButtonPress}
                         startNewButtonPress={startNewButtonPress}
-                        submitImagesForm={submitImagesForm}
                         historyIndexes={historyIndexes}
                         settingsButtonPress={settingsButtonPress}
                         historyButtonPress={historyButtonPress}
-                        isLoading={isLoading}
-                        micButtonPress={micButtonPress}
                     />
+
+                    <FooterInteractionContainer icon='brush' screenName='Generate Images' callback={submitImagesForm} isLoading={isLoading} micButtonPress={micButtonPress} />
 
                 </OpacityWrapper>
 
